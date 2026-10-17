@@ -1,0 +1,7 @@
+[package]
+name = "stable_auto"
+description = "Simulating `auto trait`s on stable Rust through blanket `impl`s"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]

@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "crates/stable_auto",
+    "crates/stable_auto_macros",
+]
+resolver = "3"
