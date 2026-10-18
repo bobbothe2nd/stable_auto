@@ -5,6 +5,9 @@ version = 4
 [[package]]
 name = "stable_auto"
 version = "0.1.0"
+dependencies = [
+ "stable_auto_macros",
+]
 
 [[package]]
 name = "stable_auto_macros"

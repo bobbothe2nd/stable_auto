@@ -5,3 +5,4 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+stable_auto_macros = { version = "0.1.0", path = "../stable_auto_macros" }

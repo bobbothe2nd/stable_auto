@@ -1,4 +1,4 @@
-use stable_auto::{__stable_auto_macro_inner, AllImpl, Auto};
+use stable_auto::{AllImpl, Auto};
 
 trait Marker {}
 
@@ -6,24 +6,41 @@ impl __auto_Marker_inner for u16 {}
 impl __auto_Marker_inner for u32 {}
 impl __auto_Marker_inner for usize {}
 
-__stable_auto_macro_inner!(@auto_trait Marker __auto_Marker_inner);
+impl<T> Marker for T
+where
+    T: Auto,
+    T::Fields: __auto_Marker_inner,
+{
+}
+
+#[allow(non_camel_case_types)]
+trait __auto_Marker_inner {}
+
+impl<T: __auto_Marker_inner> __auto_Marker_inner for AllImpl<T> {}
+
+impl<A: Auto, B: Auto> __auto_Marker_inner for (A, B)
+where
+    A::Fields: Marker,
+    B::Fields: Marker,
+{
+}
 
 struct ImplAuto1;
 
 unsafe impl Auto for ImplAuto1 {
-    type Fields = AllImpl<u32>;
+    type Fields = <u32 as Auto>::Fields;
 }
 
 struct ImplAuto2;
 
 unsafe impl Auto for ImplAuto2 {
-    type Fields = (AllImpl<u32>, AllImpl<usize>);
+    type Fields = (<u32 as Auto>::Fields, <usize as Auto>::Fields);
 }
 
 struct ImplAuto3;
 
 unsafe impl Auto for ImplAuto3 {
-    type Fields = ((AllImpl<u32>, AllImpl<u16>), AllImpl<usize>);
+    type Fields = ((<ImplAuto2 as Auto>::Fields, <u16 as Auto>::Fields), <usize as Auto>::Fields);
 }
 
 fn if_auto<T: Marker>() {}
@@ -35,3 +52,4 @@ fn impl_auto() {
     if_auto::<ImplAuto2>();
     if_auto::<ImplAuto3>();
 }
+    

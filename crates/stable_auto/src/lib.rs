@@ -4,30 +4,7 @@
 
 use core::marker::{PhantomData, PhantomPinned};
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! __stable_auto_macro_inner {
-    (@auto_trait $trait:ident $trait_inner:ident) => {
-        impl<T> $trait for T
-        where
-            T: $crate::Auto,
-            <T as $crate::Auto>::Fields: $trait_inner,
-        {
-        }
-
-        #[allow(non_camel_case_types)]
-        trait $trait_inner {}
-
-        impl<T: $trait_inner> $trait_inner for $crate::AllImpl<T> {}
-
-        impl<A, B> $trait_inner for (A, B)
-        where
-            A: $trait,
-            B: $trait,
-        {
-        }
-    };
-}
+pub use stable_auto_macros::{auto_leaf, auto_opaque, auto_trait};
 
 mod private {
     pub trait SealedTuple {}
@@ -75,11 +52,11 @@ pub unsafe trait Auto {
 }
 
 unsafe impl<T> Auto for AllImpl<T> {
-    type Fields = AllImpl<T>;
+    type Fields = Self;
 }
 
 unsafe impl Auto for () {
-    type Fields = ();
+    type Fields = Self;
 }
 
 unsafe impl<A: Auto, B: Auto> Auto for (A, B) {
