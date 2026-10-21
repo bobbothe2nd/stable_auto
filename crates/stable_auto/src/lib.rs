@@ -9,10 +9,19 @@ pub use stable_auto_macros::{auto_leaf, auto_opaque, auto_trait};
 mod private {
     pub trait SealedTuple {}
     impl<A> SealedTuple for super::AllImpl<A> {}
+    impl<A> SealedTuple for super::Leaf<A> {}
     impl SealedTuple for () {}
-    impl<A: SealedTuple, B: SealedTuple> SealedTuple for (A, B) {}
+    impl<A, B> SealedTuple for (A, B) {}
 }
 
+/// Represents a leaf node in auto trait solving
+///
+/// Use this when you want to use an auto type to be used with multiple other types.
+pub struct Leaf<T = ()>(PhantomData<T>);
+
+/// Represents an opaque wrapper in auto trait solving
+///
+/// While mostly an implementation detail, this is used when a type is a always an auto leaf node.
 pub struct AllImpl<T = ()>(PhantomData<T>);
 
 /// A trait to automatically implement other traits if all fields implement them.
@@ -23,6 +32,7 @@ pub struct AllImpl<T = ()>(PhantomData<T>);
 /// This means, if `Send2` is a `#[auto_trait]`, these would be equal:
 ///
 /// ```rust
+/// # use core::cell::UnsafeCell;
 /// struct Foo {
 ///     a: UnsafeCell<u32>,
 /// }
@@ -33,7 +43,7 @@ pub struct AllImpl<T = ()>(PhantomData<T>);
 /// and:
 ///
 /// ```rust
-/// # #[stabke_auto::auto_trait] trait Send2 {}
+/// # use stable_auto::*; use core::cell::UnsafeCell; #[auto_trait] trait Send2 {}
 /// struct Foo {
 ///     a: UnsafeCell<u32>,
 /// }
@@ -52,6 +62,10 @@ pub unsafe trait Auto {
 }
 
 unsafe impl<T> Auto for AllImpl<T> {
+    type Fields = Self;
+}
+
+unsafe impl<T> Auto for Leaf<T> {
     type Fields = Self;
 }
 
@@ -79,21 +93,16 @@ macro_rules! impl_auto_leaf {
             type Fields = AllImpl<Self>;
         }
     )*};
-
-    (0 $($ty:ty)*) => {$(
-        unsafe impl Auto for $ty {
-            type Fields = AllImpl<Self>;
-        }
-
-        unsafe impl Auto for core::num::NonZero<$ty> {
-            type Fields = AllImpl<Self>;
-        }
-    )*};
 }
 
 #[rustfmt::skip]
 mod leaf {
     use super::*;
+
+    use core::num::{
+        NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize,
+        NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroIsize,
+    };
 
     impl_auto_leaf!(
         f32 f64
@@ -101,9 +110,10 @@ mod leaf {
     );
 
     impl_auto_leaf!(
-        0
         u8 u16 u32 u64 u128 usize
         i8 i16 i32 i64 i128 isize
+        NonZeroU8 NonZeroU16 NonZeroU32 NonZeroU64 NonZeroU128 NonZeroUsize
+        NonZeroI8 NonZeroI16 NonZeroI32 NonZeroI64 NonZeroI128 NonZeroIsize
     );
 
     impl_auto_leaf!(

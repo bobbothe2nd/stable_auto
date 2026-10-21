@@ -1,0 +1,7 @@
+[package]
+name = "auto_test1"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+stable_auto = { version = "0.1.0", path = "../stable_auto" }

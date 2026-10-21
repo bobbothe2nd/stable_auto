@@ -1,4 +1,4 @@
-use stable_auto::{AllImpl, Auto};
+use stable_auto::{AllImpl, Auto, Leaf};
 
 trait Marker {}
 
@@ -18,8 +18,12 @@ trait __auto_Marker_inner {}
 
 impl<T: __auto_Marker_inner> __auto_Marker_inner for AllImpl<T> {}
 
-impl<A: Auto, B: Auto> __auto_Marker_inner for (A, B)
+impl<T: Marker> __auto_Marker_inner for Leaf<T> {}
+
+impl<A, B> __auto_Marker_inner for (A, B)
 where
+    A: Auto,
+    B: Auto,
     A::Fields: Marker,
     B::Fields: Marker,
 {
@@ -52,4 +56,3 @@ fn impl_auto() {
     if_auto::<ImplAuto2>();
     if_auto::<ImplAuto3>();
 }
-    
