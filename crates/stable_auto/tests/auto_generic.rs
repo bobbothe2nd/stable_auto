@@ -12,17 +12,15 @@ where
 auto_leaf! {
     impl Marker for u32 {}
     impl Marker for usize {}
-    impl Marker for PhantomMarked<'_> {}
 }
 
-/*
 mod impls {
     stable_auto::auto_leaf! {
         // parse paths!!
         impl super::Marker for u16 {}
+        impl super::Marker for super::PhantomMarked<'_> {}
     }
 }
-*/
 
 #[auto_opaque]
 struct PhantomNotMarked;

@@ -1,4 +1,4 @@
-use proc_macro::{Delimiter, Spacing, TokenStream, TokenTree};
+use proc_macro::{Delimiter, Ident, Spacing, Span, TokenStream, TokenTree};
 use std::iter::Peekable;
 
 use crate::punct;
@@ -174,7 +174,7 @@ where
     I: Iterator<Item = TokenTree>,
 {
     let mut depth = 1usize;
-    let mut tokens = TokenStream::new();
+    let mut tokens = TokenStream::from(punct('<', Spacing::Alone));
 
     for token in iter {
         match &token {
@@ -240,4 +240,66 @@ where
     }
 
     Some(where_tokens)
+}
+
+pub fn parse_path<I>(
+    tokens: &mut Peekable<I>,
+) -> Result<(TokenStream, Ident), TokenStream>
+where
+    I: Iterator<Item = TokenTree>,
+{
+    let Some(TokenTree::Ident(mut current)) = tokens.next() else {
+        return Err(error!(
+            tokens
+                .peek()
+                .map(TokenTree::span)
+                .unwrap_or(Span::call_site()),
+            "expected trait path after `impl`"
+        ));
+    };
+
+    let mut path = TokenStream::new();
+
+    loop {
+        let Some(TokenTree::Punct(colon)) = tokens.peek() else {
+            break;
+        };
+
+        if *colon != ':' {
+            break;
+        }
+
+        let colon = tokens.next().unwrap();
+
+        let Some(TokenTree::Punct(second_colon)) = tokens.next() else {
+            return Err(error!(
+                colon.span(),
+                "expected `:` in trait path"
+            ));
+        };
+
+        if second_colon != ':' {
+            return Err(error!(
+                second_colon.span(),
+                "expected `:` in trait path"
+            ));
+        }
+
+        let Some(TokenTree::Ident(segment)) = tokens.next() else {
+            return Err(error!(
+                second_colon.span(),
+                "expected identifier after `::`"
+            ));
+        };
+
+        path.extend([
+            TokenTree::Ident(current),
+            colon,
+            TokenTree::Punct(second_colon),
+        ]);
+
+        current = segment;
+    }
+
+    Ok((path, current))
 }

@@ -1,6 +1,6 @@
 use proc_macro::{Delimiter, Ident, TokenStream, TokenTree};
 
-use crate::{generics::extract_angle_group, ident, is_ident};
+use crate::{generics::{extract_angle_group, parse_path}, ident, is_ident};
 
 pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
     let mut tokens = input.into_iter().peekable();
@@ -23,21 +23,21 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
             _ => None,
         };
 
-        let Some(TokenTree::Ident(trait_name)) = tokens.next() else {
-            return error!(token.span(), "expected trait name after `impl`");
+        let (trait_path, trait_name) = match parse_path(&mut tokens) {
+            Ok(path) => path,
+            Err(error) => return error,
         };
 
         let Some(token) = tokens.next() else {
             return error!(token.span(), "expected `for` after trait name");
         };
 
-        // interpret paths here
-
         if !is_ident(&token, "for") {
             return error!(token.span(), "expected `for` after trait name");
         }
 
         let mut ty = TokenStream::new();
+        let mut depth = 0;
 
         let body = loop {
             let Some(token) = tokens.next() else {
@@ -48,8 +48,18 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
             };
 
             match token {
-                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+                TokenTree::Group(group) if depth == 0 && group.delimiter() == Delimiter::Brace => {
                     break group;
+                }
+
+                TokenTree::Punct(punct) if punct == '<' => {
+                    depth += 1;
+                    ty.extend([TokenTree::Punct(punct)]);
+                }
+
+                TokenTree::Punct(punct) if punct == '>' => {
+                    depth -= 1;
+                    ty.extend([TokenTree::Punct(punct)]);
                 }
 
                 token => {
@@ -65,6 +75,8 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
         if let Some(generics) = generics {
             output.extend(generics);
         }
+
+        output.extend(trait_path);
 
         output.extend([
             TokenTree::Ident(inner_name),

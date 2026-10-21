@@ -32,22 +32,19 @@ where
 struct ImplAuto1;
 
 unsafe impl Auto for ImplAuto1 {
-    type Fields = <u32 as Auto>::Fields;
+    type Fields = Leaf<u32>;
 }
 
 struct ImplAuto2;
 
 unsafe impl Auto for ImplAuto2 {
-    type Fields = (<u32 as Auto>::Fields, <usize as Auto>::Fields);
+    type Fields = (Leaf<u32>, Leaf<usize>);
 }
 
 struct ImplAuto3;
 
 unsafe impl Auto for ImplAuto3 {
-    type Fields = (
-        (<ImplAuto2 as Auto>::Fields, <u16 as Auto>::Fields),
-        <usize as Auto>::Fields,
-    );
+    type Fields = ((Leaf<ImplAuto2>, Leaf<u16>), Leaf<usize>);
 }
 
 fn if_auto<T: Marker>() {}
