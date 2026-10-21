@@ -30,7 +30,13 @@ unsafe impl Auto for ImplAuto4 {
 pub struct ImplAuto5;
 
 unsafe impl Auto for ImplAuto5 {
-    type Fields = (((Leaf<Leaf<Leaf<ImplAuto4>>>, Leaf<ImplAuto2>), Leaf<ImplAuto3>), Leaf<ImplAuto1>);
+    type Fields = (
+        (
+            (Leaf<Leaf<Leaf<ImplAuto4>>>, Leaf<ImplAuto2>),
+            Leaf<ImplAuto3>,
+        ),
+        Leaf<ImplAuto1>,
+    );
 }
 
 #[test]

@@ -1,5 +1,6 @@
 //! Simulating `auto trait`s on stable Rust through blanket `impl`s
 
+#![forbid(missing_docs)]
 #![no_std]
 
 use core::marker::{PhantomData, PhantomPinned};

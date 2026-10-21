@@ -44,7 +44,10 @@ unsafe impl Auto for ImplAuto2 {
 struct ImplAuto3;
 
 unsafe impl Auto for ImplAuto3 {
-    type Fields = ((<ImplAuto2 as Auto>::Fields, <u16 as Auto>::Fields), <usize as Auto>::Fields);
+    type Fields = (
+        (<ImplAuto2 as Auto>::Fields, <u16 as Auto>::Fields),
+        <usize as Auto>::Fields,
+    );
 }
 
 fn if_auto<T: Marker>() {}

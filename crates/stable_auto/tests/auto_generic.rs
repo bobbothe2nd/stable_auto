@@ -1,20 +1,28 @@
-/*
 use core::marker::PhantomData;
 
 use stable_auto::{auto_leaf, auto_opaque, auto_trait};
 
 #[auto_trait]
-trait Marker: Clone
-where 
+trait Marker<T = u8>: Clone
+where
     Self: Copy,
-{}
+{
+}
 
 auto_leaf! {
-    impl Marker for u16 {}
     impl Marker for u32 {}
     impl Marker for usize {}
     impl Marker for PhantomMarked<'_> {}
 }
+
+/*
+mod impls {
+    stable_auto::auto_leaf! {
+        // parse paths!!
+        impl super::Marker for u16 {}
+    }
+}
+*/
 
 #[auto_opaque]
 struct PhantomNotMarked;
@@ -30,13 +38,13 @@ where
 
 /*
 #[derive(Auto)]
-struct ImplAuto3<Y: Clone = u8>
+struct ImplAuto3<'a, Y: Clone = usize>
 where
     T: Send,
 {
-    _a: ImplAuto2,
-    _b: u16,
-    _c: usize,
+    _a: &'a ImplAuto2,
+    _b: [u16; 3],
+    _c: T,
 }
 */
 
@@ -47,6 +55,7 @@ fn auto_leaf() {
     if_auto::<u32>();
     if_auto::<PhantomMarked>();
     let _ = PhantomNotMarked;
-    let _ = *&PhantomMarked::<'_, u8, 32> { _marker: PhantomData };
+    let _ = *&PhantomMarked::<'_, u8, 32> {
+        _marker: PhantomData,
+    };
 }
-*/

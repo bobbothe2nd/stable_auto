@@ -1,6 +1,6 @@
-use proc_macro::{Delimiter, Group, Ident, TokenStream, TokenTree};
+use proc_macro::{Delimiter, Ident, TokenStream, TokenTree};
 
-use crate::{ident, is_ident};
+use crate::{generics::extract_angle_group, ident, is_ident};
 
 pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
     let mut tokens = input.into_iter().peekable();
@@ -15,6 +15,14 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
             return error!(token.span(), "expected `impl`");
         }
 
+        let generics = match tokens.peek() {
+            Some(TokenTree::Punct(punct)) if *punct == '<' => {
+                let _ = tokens.next();
+                extract_angle_group(&mut tokens)
+            }
+            _ => None,
+        };
+
         let Some(TokenTree::Ident(trait_name)) = tokens.next() else {
             return error!(token.span(), "expected trait name after `impl`");
         };
@@ -22,6 +30,8 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
         let Some(token) = tokens.next() else {
             return error!(token.span(), "expected `for` after trait name");
         };
+
+        // interpret paths here
 
         if !is_ident(&token, "for") {
             return error!(token.span(), "expected `for` after trait name");
@@ -48,22 +58,23 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
             }
         };
 
-        emit_impl(&mut output, &trait_name, ty, body);
+        let inner_name = Ident::new(&format!("__auto_{}_inner", trait_name), trait_name.span());
+
+        output.extend([ident("impl", trait_name.span())]);
+
+        if let Some(generics) = generics {
+            output.extend(generics);
+        }
+
+        output.extend([
+            TokenTree::Ident(inner_name),
+            ident("for", trait_name.span()),
+        ]);
+
+        output.extend(ty);
+
+        output.extend([TokenTree::Group(body)]);
     }
 
     output
-}
-
-fn emit_impl(output: &mut TokenStream, trait_name: &Ident, ty: TokenStream, body: Group) {
-    let inner_name = Ident::new(&format!("__auto_{}_inner", trait_name), trait_name.span());
-
-    output.extend([
-        ident("impl", trait_name.span()),
-        TokenTree::Ident(inner_name),
-        ident("for", trait_name.span()),
-    ]);
-
-    output.extend(ty);
-
-    output.extend([TokenTree::Group(body)]);
 }

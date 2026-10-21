@@ -2,7 +2,5 @@
 members = [
     "crates/stable_auto",
     "crates/stable_auto_macros",
-    "crates/auto_test",
-    "crates/auto_test1",
 ]
 resolver = "3"

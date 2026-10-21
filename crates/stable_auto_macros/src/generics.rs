@@ -208,7 +208,7 @@ where
     match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident.to_string() == "where" => {}
         _ => return None,
-    };
+    }
 
     let mut where_tokens = TokenStream::from(tokens.next()?);
     let mut angle_depth = 0;

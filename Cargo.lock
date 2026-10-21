@@ -3,21 +3,6 @@
 version = 4
 
 [[package]]
-name = "auto_test"
-version = "0.1.0"
-dependencies = [
- "auto_test1",
- "stable_auto",
-]
-
-[[package]]
-name = "auto_test1"
-version = "0.1.0"
-dependencies = [
- "stable_auto",
-]
-
-[[package]]
 name = "stable_auto"
 version = "0.1.0"
 dependencies = [
