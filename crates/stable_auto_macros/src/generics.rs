@@ -10,7 +10,7 @@ where
     I: Iterator<Item = TokenTree>,
 {
     match iter.peek() {
-        Some(TokenTree::Punct(p)) if *p == '<' => {}
+        Some(TokenTree::Punct(punct)) if *punct == '<' => {}
         _ => return None,
     }
 
@@ -29,7 +29,7 @@ where
     loop {
         if matches!(
             iter.peek(),
-            Some(TokenTree::Punct(p)) if *p == '>'
+            Some(TokenTree::Punct(punct)) if *punct == '>'
         ) {
             iter.next();
 
@@ -93,11 +93,11 @@ where
         }
 
         match iter.peek() {
-            Some(TokenTree::Punct(p)) if *p == ',' => {
+            Some(TokenTree::Punct(punct)) if *punct == ',' => {
                 iter.next();
             }
 
-            Some(TokenTree::Punct(p)) if *p == '>' => {}
+            Some(TokenTree::Punct(punct)) if *punct == '>' => {}
 
             _ => return None,
         }
@@ -112,15 +112,15 @@ fn copy_parameter_tail<I>(
 where
     I: Iterator<Item = TokenTree>,
 {
-    let mut angle_depth = 0usize;
+    let mut depth = 0usize;
     let mut has_default = false;
 
     loop {
         let token = iter.peek()?;
 
         match token {
-            TokenTree::Punct(p) if *p == '<' => {
-                angle_depth += 1;
+            TokenTree::Punct(punct) if *punct == '<' => {
+                depth += 1;
 
                 let token = iter.next()?;
                 original.extend([token.clone()]);
@@ -130,12 +130,12 @@ where
                 }
             }
 
-            TokenTree::Punct(p) if *p == '>' => {
-                if angle_depth == 0 {
+            TokenTree::Punct(punct) if *punct == '>' => {
+                if depth == 0 {
                     return Some(());
                 }
 
-                angle_depth -= 1;
+                depth -= 1;
 
                 let token = iter.next()?;
                 original.extend([token.clone()]);
@@ -145,11 +145,11 @@ where
                 }
             }
 
-            TokenTree::Punct(p) if *p == ',' && angle_depth == 0 => {
+            TokenTree::Punct(punct) if *punct == ',' && depth == 0 => {
                 return Some(());
             }
 
-            TokenTree::Punct(p) if *p == '=' && angle_depth == 0 => {
+            TokenTree::Punct(punct) if *punct == '=' && depth == 0 => {
                 has_default = true;
 
                 let token = iter.next()?;
@@ -178,11 +178,11 @@ where
 
     for token in iter {
         match &token {
-            TokenTree::Punct(p) if *p == '<' => {
+            TokenTree::Punct(punct) if *punct == '<' => {
                 depth += 1;
             }
 
-            TokenTree::Punct(p) if *p == '>' => {
+            TokenTree::Punct(punct) if *punct == '>' => {
                 depth -= 1;
 
                 if depth == 0 {
@@ -211,25 +211,23 @@ where
     }
 
     let mut where_tokens = TokenStream::from(tokens.next()?);
-    let mut angle_depth = 0;
+    let mut depth = 0;
 
     while let Some(token) = tokens.peek() {
         match token {
-            TokenTree::Punct(p) if *p == '<' => {
-                angle_depth += 1;
+            TokenTree::Punct(punct) if *punct == '<' => {
+                depth += 1;
             }
 
-            TokenTree::Punct(p) if *p == '>' && angle_depth > 0 => {
-                angle_depth -= 1;
+            TokenTree::Punct(punct) if *punct == '>' && depth > 0 => {
+                depth -= 1;
             }
 
-            TokenTree::Group(group)
-                if group.delimiter() == Delimiter::Brace && angle_depth == 0 =>
-            {
+            TokenTree::Group(group) if group.delimiter() == Delimiter::Brace && depth == 0 => {
                 break;
             }
 
-            TokenTree::Punct(p) if *p == ';' && angle_depth == 0 => {
+            TokenTree::Punct(punct) if *punct == ';' && depth == 0 => {
                 break;
             }
 
@@ -242,9 +240,41 @@ where
     Some(where_tokens)
 }
 
-pub fn parse_path<I>(
-    tokens: &mut Peekable<I>,
-) -> Result<(TokenStream, Ident), TokenStream>
+pub fn extract_field_type<I>(
+    tokens: &mut std::iter::Peekable<I>,
+) -> Result<TokenStream, TokenStream>
+where
+    I: Iterator<Item = TokenTree>,
+{
+    let mut ty = TokenStream::new();
+    let mut depth = 0usize;
+
+    while let Some(token) = tokens.peek() {
+        match token {
+            TokenTree::Punct(p) if p.as_char() == '<' => {
+                depth += 1;
+                ty.extend([tokens.next().unwrap()]);
+            }
+
+            TokenTree::Punct(p) if p.as_char() == '>' && depth > 0 => {
+                depth -= 1;
+                ty.extend([tokens.next().unwrap()]);
+            }
+
+            TokenTree::Punct(p) if p.as_char() == ',' && depth == 0 => {
+                break;
+            }
+
+            _ => {
+                ty.extend([tokens.next().unwrap()]);
+            }
+        }
+    }
+
+    Ok(ty)
+}
+
+pub fn parse_path<I>(tokens: &mut Peekable<I>) -> Result<(TokenStream, Ident), TokenStream>
 where
     I: Iterator<Item = TokenTree>,
 {
@@ -260,11 +290,7 @@ where
 
     let mut path = TokenStream::new();
 
-    loop {
-        let Some(TokenTree::Punct(colon)) = tokens.peek() else {
-            break;
-        };
-
+    while let Some(TokenTree::Punct(colon)) = tokens.peek() {
         if *colon != ':' {
             break;
         }
@@ -272,17 +298,11 @@ where
         let colon = tokens.next().unwrap();
 
         let Some(TokenTree::Punct(second_colon)) = tokens.next() else {
-            return Err(error!(
-                colon.span(),
-                "expected `:` in trait path"
-            ));
+            return Err(error!(colon.span(), "expected `:` in trait path"));
         };
 
         if second_colon != ':' {
-            return Err(error!(
-                second_colon.span(),
-                "expected `:` in trait path"
-            ));
+            return Err(error!(second_colon.span(), "expected `:` in trait path"));
         }
 
         let Some(TokenTree::Ident(segment)) = tokens.next() else {

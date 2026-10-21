@@ -5,7 +5,7 @@
 
 use core::marker::{PhantomData, PhantomPinned};
 
-pub use stable_auto_macros::{auto_leaf, auto_opaque, auto_trait};
+pub use stable_auto_macros::{Auto, auto_leaf, auto_opaque, auto_trait};
 
 mod private {
     pub trait SealedTuple {}
@@ -70,6 +70,14 @@ unsafe impl<T> Auto for Leaf<T> {
     type Fields = Self;
 }
 
+unsafe impl<T> Auto for &T {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<T> Auto for &mut T {
+    type Fields = AllImpl<Self>;
+}
+
 unsafe impl Auto for () {
     type Fields = Self;
 }
@@ -126,6 +134,7 @@ mod leaf {
         <T> core::option::Option<T>
         <T> PhantomData<T>
         <T> &[T]
+        <T> &mut [T]
     );
 
     #[cfg(target_arch = "x86_64")]

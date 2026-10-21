@@ -18,9 +18,7 @@ struct PhantomNotMarked;
 struct PhantomMarked;
 
 #[derive(Auto)]
-struct ImplAuto1 {
-    _a: u32,
-}
+struct ImplAuto1(u32);
 
 #[derive(Auto)]
 struct ImplAuto2 {

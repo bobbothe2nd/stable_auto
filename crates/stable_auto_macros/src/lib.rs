@@ -72,3 +72,10 @@ pub fn auto_opaque(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     auto_opaque::auto_opaque_inner(item)
 }
+
+mod derive_auto;
+
+#[proc_macro_derive(Auto)]
+pub fn derive_auto(input: TokenStream) -> TokenStream {
+    derive_auto::derive_auto_inner(input)
+}

@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use stable_auto::{auto_leaf, auto_opaque, auto_trait};
+use stable_auto::{Auto, auto_leaf, auto_opaque, auto_trait};
 
 #[auto_trait]
 trait Marker<T = u8>: Clone
@@ -12,6 +12,8 @@ where
 auto_leaf! {
     impl Marker for u32 {}
     impl Marker for usize {}
+    impl<T: Marker> Marker for &T {}
+    impl<T: Marker, const N: usize> Marker for [T; N] {}
 }
 
 mod impls {
@@ -34,17 +36,15 @@ where
     _marker: PhantomData<&'a (T, [T; N])>,
 }
 
-/*
 #[derive(Auto)]
-struct ImplAuto3<'a, Y: Clone = usize>
+struct ImplAuto3<'a, T: Clone = usize>
 where
     T: Send,
 {
-    _a: &'a ImplAuto2,
+    _a: &'a PhantomMarked<'a>,
     _b: [u16; 3],
     _c: T,
 }
-*/
 
 fn if_auto<T: Marker>() {}
 
@@ -52,6 +52,7 @@ fn if_auto<T: Marker>() {}
 fn auto_leaf() {
     if_auto::<u32>();
     if_auto::<PhantomMarked>();
+    if_auto::<ImplAuto3>();
     let _ = PhantomNotMarked;
     let _ = *&PhantomMarked::<'_, u8, 32> {
         _marker: PhantomData,

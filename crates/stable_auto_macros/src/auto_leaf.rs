@@ -1,6 +1,9 @@
 use proc_macro::{Delimiter, Ident, TokenStream, TokenTree};
 
-use crate::{generics::{extract_angle_group, parse_path}, ident, is_ident};
+use crate::{
+    generics::{extract_angle_group, parse_path},
+    ident, is_ident,
+};
 
 pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
     let mut tokens = input.into_iter().peekable();
