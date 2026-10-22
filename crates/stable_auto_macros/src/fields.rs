@@ -1,8 +1,6 @@
 use proc_macro::{Delimiter, Span, TokenStream, TokenTree};
 
-pub fn extract_tuple_fields(
-    fields: TokenStream,
-) -> Result<Vec<TokenStream>, TokenStream> {
+pub fn extract_tuple_fields(fields: TokenStream) -> Result<Vec<TokenStream>, TokenStream> {
     let mut tokens = fields.into_iter().peekable();
     let mut types = Vec::new();
 
@@ -23,19 +21,14 @@ pub fn extract_tuple_fields(
     Ok(types)
 }
 
-pub fn extract_named_fields(
-    fields: TokenStream,
-) -> Result<Vec<TokenStream>, TokenStream> {
+pub fn extract_named_fields(fields: TokenStream) -> Result<Vec<TokenStream>, TokenStream> {
     let mut tokens = fields.into_iter().peekable();
     let mut types = Vec::new();
 
     while tokens.peek().is_some() {
         loop {
             let Some(token) = tokens.next() else {
-                return Err(error!(
-                    Span::call_site(),
-                    "expected `:` after field"
-                ));
+                return Err(error!(Span::call_site(), "expected `:` after field"));
             };
 
             if let TokenTree::Punct(punct) = &token {
@@ -94,24 +87,17 @@ where
     Ok(ty)
 }
 
-pub fn extract_enum_types(
-    body: TokenStream,
-) -> Result<Vec<TokenStream>, TokenStream> {
+pub fn extract_enum_types(body: TokenStream) -> Result<Vec<TokenStream>, TokenStream> {
     let mut tokens = body.into_iter().peekable();
     let mut types = Vec::new();
 
     while tokens.peek().is_some() {
         let Some(TokenTree::Ident(_)) = tokens.next() else {
-            return Err(error!(
-                Span::call_site(),
-                "expected enum variant"
-            ));
+            return Err(error!(Span::call_site(), "expected enum variant"));
         };
 
         match tokens.peek() {
-            Some(TokenTree::Group(group))
-                if group.delimiter() == Delimiter::Parenthesis =>
-            {
+            Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
                 let group = match tokens.next().unwrap() {
                     TokenTree::Group(group) => group,
                     _ => unreachable!(),
@@ -120,9 +106,7 @@ pub fn extract_enum_types(
                 types.extend(extract_tuple_fields(group.stream())?);
             }
 
-            Some(TokenTree::Group(group))
-                if group.delimiter() == Delimiter::Brace =>
-            {
+            Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Brace => {
                 let group = match tokens.next().unwrap() {
                     TokenTree::Group(group) => group,
                     _ => unreachable!(),

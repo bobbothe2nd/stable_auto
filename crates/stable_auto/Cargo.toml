@@ -2,8 +2,14 @@
 name = "stable_auto"
 description = "Simulating `auto trait`s on stable Rust through blanket `impl`s"
 version = "0.1.0"
-rust-version = "1.30"
+rust-version = "1.0"
 edition = "2015"
+
+[features]
+default = ["std"]
+
+std = ["alloc"]
+alloc = []
 
 [dependencies]
 stable_auto_macros = { version = "0.1.0", path = "../stable_auto_macros" }

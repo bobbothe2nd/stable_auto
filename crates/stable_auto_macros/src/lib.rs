@@ -53,8 +53,8 @@ fn is_ident(token: &TokenTree, expected: &str) -> bool {
     )
 }
 
-mod generics;
 mod fields;
+mod generics;
 
 mod auto_leaf;
 

@@ -17,10 +17,7 @@ pub fn auto_opaque_inner(input: TokenStream) -> TokenStream {
         };
 
         if let TokenTree::Ident(ident) = &keyword {
-            if !matches!(
-                ident.to_string().as_str(),
-                "struct" | "enum" | "union"
-            ) {
+            if !matches!(ident.to_string().as_str(), "struct" | "enum" | "union") {
                 output.extend([keyword]);
                 continue;
             }

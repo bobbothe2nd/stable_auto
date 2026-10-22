@@ -2,7 +2,7 @@ extern crate stable_auto;
 
 use std::marker::PhantomData;
 
-use stable_auto::{Auto, auto_leaf, auto_opaque, auto_trait};
+use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto};
 
 #[auto_trait]
 trait Marker<T = u8>: Clone

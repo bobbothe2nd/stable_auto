@@ -2,7 +2,7 @@ extern crate stable_auto;
 
 use std::mem::ManuallyDrop;
 
-use stable_auto::{Auto, auto_trait, auto_opaque, auto_leaf};
+use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto};
 
 #[auto_trait]
 trait Marker {}
@@ -39,11 +39,7 @@ struct ImplAuto3 {
 
 #[derive(Auto)]
 enum EnumAuto3 {
-    _A {
-        _a: ImplAuto2,
-        _b: u16,
-        _c: usize,
-    },
+    _A { _a: ImplAuto2, _b: u16, _c: usize },
 
     _B,
 
