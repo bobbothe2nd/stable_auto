@@ -1,5 +1,14 @@
 use proc_macro::{Punct, Spacing, Span, TokenStream, TokenTree};
 
+macro_rules! try_stream {
+    ($stream:expr) => {
+        match $stream {
+            Ok(stream) => stream,
+            Err(stream) => return stream,
+        }
+    };
+}
+
 macro_rules! error {
     ($span:expr, $($args:tt)*) => {{
         let msg = ::std::format!($($args)*);
@@ -42,10 +51,14 @@ fn is_ident(token: &TokenTree, expected: &str) -> bool {
     )
 }
 
-pub(crate) mod generics;
+mod generics;
+mod fields;
 
 mod auto_leaf;
 
+/// Transforms a clean `impl Marker` into the uglier internal implementation for auto traits.
+///
+/// Use this for defining the base cases for a marker trait on foreign types.
 #[proc_macro]
 pub fn auto_leaf(input: TokenStream) -> TokenStream {
     auto_leaf::auto_leaf_inner(input)
@@ -53,6 +66,7 @@ pub fn auto_leaf(input: TokenStream) -> TokenStream {
 
 mod auto_trait;
 
+/// Defines an auto trait, to be implemented on every auto type which has only explicitly defined base case fields (must be a marker trait).
 #[proc_macro_attribute]
 pub fn auto_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
     if !attr.is_empty() {
@@ -64,6 +78,17 @@ pub fn auto_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 mod auto_opaque;
 
+/// Implements `Auto` for a type as opaque to the trait solver.
+///
+/// This will implement auto traits only if they explicitly implement it. Useful for [`PhantomPinned`](core::marker::PhantomPinned)-like markers.
+///
+/// ```ignore
+/// struct ImplAuto1;
+///
+/// unsafe impl Auto for ImplAuto1 {
+///     type Fields = AllImpl<u32>;
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn auto_opaque(attr: TokenStream, item: TokenStream) -> TokenStream {
     if !attr.is_empty() {
@@ -75,6 +100,20 @@ pub fn auto_opaque(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 mod derive_auto;
 
+/// Derives an auto implementation from the acutal field types.
+///
+/// This is usually the macro to safely implement `Auto`.
+///
+/// ```ignore
+/// struct ImplAuto1 {
+///     _a: u32,
+///     _b: u16,
+/// }
+///
+/// unsafe impl Auto for ImplAuto1 {
+///     type Fields = (Leaf<u32>, Leaf<u16>);
+/// }
+/// ```
 #[proc_macro_derive(Auto)]
 pub fn derive_auto(input: TokenStream) -> TokenStream {
     derive_auto::derive_auto_inner(input)

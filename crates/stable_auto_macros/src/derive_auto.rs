@@ -1,8 +1,7 @@
 use proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 
 use crate::{
-    generics::{extract_field_type, extract_generics, extract_where_clause},
-    ident, is_ident, punct,
+    fields::{extract_enum_types, extract_named_fields, extract_tuple_fields}, generics::{extract_generics, extract_where_clause}, ident, punct,
 };
 
 pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
@@ -10,63 +9,36 @@ pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
     let mut output = TokenStream::new();
 
     loop {
-        let Some(token) = tokens.next() else {
-            return error!(Span::call_site(), "expected a struct declaration");
+        let Some(TokenTree::Ident(keyword)) = tokens.next() else {
+            return error!(Span::call_site(), "expected a type declaration");
         };
 
-        if !is_ident(&token, "struct") {
-            continue;
-        }
-
-        let struct_keyword = token;
-
         let Some(TokenTree::Ident(name)) = tokens.next() else {
-            return error!(struct_keyword.span(), "expected struct name after `struct`");
+            return error!(keyword.span(), "expected type name after keyword");
         };
 
         let generic_args = extract_generics(&mut tokens);
 
         let where_clause = extract_where_clause(&mut tokens).unwrap_or_default();
 
-        let Some(TokenTree::Group(fields)) = tokens.next() else {
-            return error!(name.span(), "expected struct fields");
+        let fields = match tokens.next() {
+            Some(TokenTree::Group(fields)) => fields,
+            _ => Group::new(Delimiter::None, TokenStream::new()),
         };
 
-        if fields.delimiter() != Delimiter::Brace {
-            return error!(fields.span(), "expected named struct fields");
-        }
-
-        let mut fields_tokens = fields.stream().into_iter().peekable();
-        let mut types = Vec::new();
-
-        while fields_tokens.peek().is_some() {
-            loop {
-                let Some(token) = fields_tokens.next() else {
-                    return error!(name.span(), "expected `:` after field name");
-                };
-
-                if let TokenTree::Punct(punct) = &token
-                    && *punct == ':'
-                {
-                    break;
+        let types = match keyword.to_string().as_str() {
+            "struct" => {
+                match fields.delimiter() {
+                    Delimiter::Brace => try_stream!(extract_named_fields(fields.stream())),
+                    Delimiter::Parenthesis => try_stream!(extract_tuple_fields(fields.stream())),
+                    Delimiter::None => Vec::new(),
+                    _ => unreachable!(),
                 }
             }
-
-            let ty = match extract_field_type(&mut fields_tokens) {
-                Ok(stream) => stream,
-                Err(stream) => return stream,
-            };
-            types.push(ty);
-
-            if matches!(
-                fields_tokens.peek(),
-                Some(TokenTree::Punct(punct)) if *punct == ','
-            ) {
-                fields_tokens.next();
-            } else {
-                break;
-            }
-        }
+            "enum" => try_stream!(extract_enum_types(fields.stream())),
+            "union" => try_stream!(extract_named_fields(fields.stream())),
+            _ => unreachable!(),
+        };
 
         let fields_ty = make_fields_type(&types);
 
@@ -115,10 +87,17 @@ pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
 
 fn make_fields_type(types: &[TokenStream]) -> TokenStream {
     match types {
-        [] => TokenStream::from(TokenTree::Group(Group::new(
-            Delimiter::Parenthesis,
-            TokenStream::new(),
-        ))),
+        [] => TokenStream::from_iter([
+            punct(':', Spacing::Joint),
+            punct(':', Spacing::Alone),
+            ident("stable_auto", Span::call_site()),
+            punct(':', Spacing::Joint),
+            punct(':', Spacing::Alone),
+            ident("AllImpl", Span::call_site()),
+            punct('<', Spacing::Alone),
+            ident("Self", Span::call_site()),
+            punct('>', Spacing::Alone),
+        ]),
 
         [ty] => make_leaf(ty.clone()),
 

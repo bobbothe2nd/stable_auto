@@ -240,40 +240,6 @@ where
     Some(where_tokens)
 }
 
-pub fn extract_field_type<I>(
-    tokens: &mut std::iter::Peekable<I>,
-) -> Result<TokenStream, TokenStream>
-where
-    I: Iterator<Item = TokenTree>,
-{
-    let mut ty = TokenStream::new();
-    let mut depth = 0usize;
-
-    while let Some(token) = tokens.peek() {
-        match token {
-            TokenTree::Punct(p) if p.as_char() == '<' => {
-                depth += 1;
-                ty.extend([tokens.next().unwrap()]);
-            }
-
-            TokenTree::Punct(p) if p.as_char() == '>' && depth > 0 => {
-                depth -= 1;
-                ty.extend([tokens.next().unwrap()]);
-            }
-
-            TokenTree::Punct(p) if p.as_char() == ',' && depth == 0 => {
-                break;
-            }
-
-            _ => {
-                ty.extend([tokens.next().unwrap()]);
-            }
-        }
-    }
-
-    Ok(ty)
-}
-
 pub fn parse_path<I>(tokens: &mut Peekable<I>) -> Result<(TokenStream, Ident), TokenStream>
 where
     I: Iterator<Item = TokenTree>,

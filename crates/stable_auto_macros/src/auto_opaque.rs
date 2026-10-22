@@ -2,7 +2,7 @@ use proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 
 use crate::{
     generics::{extract_generics, extract_where_clause},
-    ident, is_ident, punct,
+    ident, punct,
 };
 
 pub fn auto_opaque_inner(input: TokenStream) -> TokenStream {
@@ -10,23 +10,29 @@ pub fn auto_opaque_inner(input: TokenStream) -> TokenStream {
     let mut output = TokenStream::new();
 
     loop {
-        let Some(token) = tokens.next() else {
-            return error!(Span::call_site(), "expected a struct declaration");
+        let Some(keyword) = tokens.next() else {
+            return error!(Span::call_site(), "expected a type declaration");
         };
 
-        if !is_ident(&token, "struct") {
-            output.extend([token]);
+        if let TokenTree::Ident(ident) = &keyword {
+            if !matches!(
+                ident.to_string().as_str(),
+                "struct" | "enum" | "union"
+            ) {
+                output.extend([keyword]);
+                continue;
+            }
+        } else {
+            output.extend([keyword]);
             continue;
         }
 
-        let struct_keyword = token;
-
         let Some(TokenTree::Ident(mut name)) = tokens.next() else {
-            return error!(struct_keyword.span(), "expected struct name after `struct`");
+            return error!(keyword.span(), "expected type name after {keyword}");
         };
         name.set_span(Span::call_site());
 
-        output.extend([struct_keyword, TokenTree::Ident(name.clone())]);
+        output.extend([keyword, TokenTree::Ident(name.clone())]);
 
         let generic_args = extract_generics(&mut tokens);
 
