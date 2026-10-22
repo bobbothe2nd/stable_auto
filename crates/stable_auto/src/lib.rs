@@ -39,7 +39,7 @@ pub struct AllImpl<T: ?Sized = ()>(PhantomData<T>);
 /// This means, if `Send2` is a `#[auto_trait]`, these would be equal:
 ///
 /// ```rust
-/// # use core::cell::UnsafeCell;
+/// # use std::cell::UnsafeCell;
 /// struct Foo {
 ///     a: UnsafeCell<u32>,
 /// }
@@ -50,7 +50,10 @@ pub struct AllImpl<T: ?Sized = ()>(PhantomData<T>);
 /// and:
 ///
 /// ```rust
-/// # use stable_auto::*; use core::cell::UnsafeCell; #[auto_trait] trait Send2 {}
+/// # use stable_auto::*; use std::cell::UnsafeCell;
+/// #[auto_trait]
+/// unsafe trait Send2 {}
+///
 /// struct Foo {
 ///     a: UnsafeCell<u32>,
 /// }

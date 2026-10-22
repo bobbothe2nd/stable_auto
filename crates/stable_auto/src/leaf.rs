@@ -1,6 +1,12 @@
-use super::*;
+use super::{Auto, AllImpl, PhantomData};
 
-use core::cell::{BorrowError, BorrowMutError, Cell, Ref, RefCell, RefMut, UnsafeCell};
+use core::{
+    cell::{BorrowError, BorrowMutError, Cell, Ref, RefCell, RefMut, UnsafeCell},
+    any::TypeId,
+    ascii::EscapeDefault,
+    char::{EscapeDefault as CharDefault, EscapeUnicode as CharUnicode, ToLowercase as CharLower, ToUppercase as CharUpper},
+    convert::Infallible,
+};
 
 impl_auto_leaf!(
     f32 f64
@@ -8,7 +14,9 @@ impl_auto_leaf!(
     u8 u16 u32 u64 u128 usize
     i8 i16 i32 i64 i128 isize
 
-    str
+    str EscapeDefault CharDefault CharUnicode CharLower CharUpper
+
+    TypeId Infallible
 );
 
 impl_auto_leaf!(
@@ -23,6 +31,25 @@ impl_auto_leaf!(
     <T> RefMut<'_, T>
     <T> [T]
 );
+
+#[cfg(decode_utf16)]
+use core::char::{DecodeUtf16, DecodeUtf16Error};
+#[cfg(decode_utf16)]
+unsafe impl<T: Iterator<Item = u16>> Auto for DecodeUtf16<T> {
+    type Fields = AllImpl<Self>;
+}
+#[cfg(decode_utf16)]
+impl_auto_leaf!(DecodeUtf16Error);
+
+#[cfg(char_escape_debug)]
+impl_auto_leaf!(core::char::EscapeDebug);
+#[cfg(u8_from_char)]
+impl_auto_leaf!(core::char::TryFromCharError);
+
+#[cfg(try_from)]
+use core::char::CharTryFromError;
+#[cfg(try_from)]
+impl_auto_leaf!(CharTryFromError);
 
 #[cfg(pin)]
 impl_auto_leaf!(core::marker::PhantomPinned);
@@ -123,7 +150,7 @@ impl_auto_leaf!(core::ffi::FromBytesUntilNulError);
 #[cfg(feature = "alloc")]
 use alloc::{
     borrow::{Cow, ToOwned},
-    boxed::{Box, BoxedArrayIntoIter},
+    boxed::Box,
     rc::Rc,
     string::String,
     sync::Arc,
@@ -150,8 +177,9 @@ unsafe impl<I: Iterator> Auto for Splice<'_, I> {
 unsafe impl<T: ?Sized + ToOwned> Auto for Cow<'_, T> {
     type Fields = AllImpl<Self>;
 }
-#[cfg(feature = "alloc")]
-unsafe impl<T, const N: usize> Auto for BoxedArrayIntoIter<T, N> {
+
+#[cfg(all(feature = "alloc", boxed_arr_iter))]
+unsafe impl<T, const N: usize> Auto for alloc::boxed::BoxedArrayIntoIter<T, N> {
     type Fields = AllImpl<Self>;
 }
 

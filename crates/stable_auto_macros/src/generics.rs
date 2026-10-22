@@ -1,5 +1,5 @@
 use proc_macro::{Delimiter, Ident, Spacing, Span, TokenStream, TokenTree};
-use std::iter::Peekable;
+use core::iter::Peekable;
 
 use crate::punct;
 

@@ -3,4 +3,4 @@ members = [
     "crates/stable_auto",
     "crates/stable_auto_macros",
 ]
-resolver = "1"
+resolver = "2"
