@@ -1,4 +1,6 @@
-use core::marker::PhantomData;
+extern crate stable_auto;
+
+use std::marker::PhantomData;
 
 use stable_auto::{Auto, auto_leaf, auto_opaque, auto_trait};
 

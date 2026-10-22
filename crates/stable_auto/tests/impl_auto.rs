@@ -1,3 +1,5 @@
+extern crate stable_auto;
+
 use stable_auto::{AllImpl, Auto, Leaf};
 
 trait Marker {}

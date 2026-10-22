@@ -5,6 +5,8 @@ use crate::{
     ident, punct,
 };
 
+use std::iter::FromIterator;
+
 pub fn auto_opaque_inner(input: TokenStream) -> TokenStream {
     let mut tokens = input.into_iter().peekable();
     let mut output = TokenStream::new();

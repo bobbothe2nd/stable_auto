@@ -3,9 +3,16 @@
 version = 4
 
 [[package]]
+name = "rust-ver"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8933e24adf731adf7c5992150bf88c85c4283fad899c7da1be415edfaa15241a"
+
+[[package]]
 name = "stable_auto"
 version = "0.1.0"
 dependencies = [
+ "rust-ver",
  "stable_auto_macros",
 ]
 

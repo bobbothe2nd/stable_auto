@@ -3,6 +3,8 @@
 #![forbid(missing_docs)]
 #![no_std]
 
+extern crate stable_auto_macros;
+
 use core::marker::{PhantomData, PhantomPinned};
 
 pub use stable_auto_macros::{Auto, auto_leaf, auto_opaque, auto_trait};
@@ -108,27 +110,30 @@ macro_rules! impl_auto_leaf {
 mod leaf {
     use super::*;
 
-    use core::num::{
-        NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize,
-        NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroIsize,
-    };
-
     impl_auto_leaf!(
-        f32 f64
-        PhantomPinned
-    );
-
-    impl_auto_leaf!(
+        f32 f64 PhantomPinned
         u8 u16 u32 u64 u128 usize
         i8 i16 i32 i64 i128 isize
+    );
+
+    use core::num::{
+        NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize,
+    };
+    impl_auto_leaf!(
         NonZeroU8 NonZeroU16 NonZeroU32 NonZeroU64 NonZeroU128 NonZeroUsize
+    );
+
+    #[cfg(signed_nonzero)]
+    use core::num::{
+        NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroIsize,
+    };
+    #[cfg(signed_nonzero)]
+    impl_auto_leaf!(
         NonZeroI8 NonZeroI16 NonZeroI32 NonZeroI64 NonZeroI128 NonZeroIsize
     );
 
     impl_auto_leaf!(
         <T> core::num::Wrapping<T>
-        <T> core::num::Saturating<T>
-        <T> core::mem::MaybeUninit<T>
         <T> core::mem::ManuallyDrop<T>
         <T, E> core::result::Result<T, E>
         <T> core::option::Option<T>
@@ -137,17 +142,43 @@ mod leaf {
         <T> &mut [T]
     );
 
+    #[cfg(maybe_uninit)]
+    impl_auto_leaf!(<T> core::mem::MaybeUninit<T>);
+
+    #[cfg(saturating_type)]
+    impl_auto_leaf!(<T> core::num::Saturating<T>);
+
+    #[cfg(rust_simd)]
     #[cfg(target_arch = "x86_64")]
     use core::arch::x86_64::{
-        __m128, __m128bh, __m128d, __m128h, __m128i,
-        __m256, __m256bh, __m256d, __m256h, __m256i,
-        __m512, __m512bh, __m512d, __m512h, __m512i,
+        __m128, __m128d, __m128i,
+        __m256, __m256d, __m256i,
     };
-
+    #[cfg(rust_simd)]
     #[cfg(target_arch = "x86_64")]
     impl_auto_leaf!(
-        __m128 __m128bh __m128d __m128h __m128i
-        __m256 __m256bh __m256d __m256h __m256i
-        __m512 __m512bh __m512d __m512h __m512i
+        __m128 __m128d __m128i
+        __m256 __m256d __m256i
     );
+
+    #[cfg(u16_simd)]
+    #[cfg(target_arch = "x86_64")]
+    use core::arch::x86_64::{__m128bh, __m256bh, __m512bh};
+    #[cfg(u16_simd)]
+    #[cfg(target_arch = "x86_64")]
+    impl_auto_leaf!(__m128bh __m256bh __m512bh);
+
+    #[cfg(f16_simd)]
+    #[cfg(target_arch = "x86_64")]
+    use core::arch::x86_64::{__m128h, __m256h, __m512h};
+    #[cfg(f16_simd)]
+    #[cfg(target_arch = "x86_64")]
+    impl_auto_leaf!(__m128h __m256h __m512h);
+
+    #[cfg(avx512_types)]
+    #[cfg(target_arch = "x86_64")]
+    use core::arch::x86_64::{__m512, __m512d, __m512i};
+    #[cfg(avx512_types)]
+    #[cfg(target_arch = "x86_64")]
+    impl_auto_leaf!(__m512 __m512d __m512i);
 }

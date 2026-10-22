@@ -1,3 +1,5 @@
+extern crate proc_macro;
+
 use proc_macro::{Punct, Spacing, Span, TokenStream, TokenTree};
 
 macro_rules! try_stream {
@@ -67,6 +69,43 @@ pub fn auto_leaf(input: TokenStream) -> TokenStream {
 mod auto_trait;
 
 /// Defines an auto trait, to be implemented on every auto type which has only explicitly defined base case fields (must be a marker trait).
+///
+/// # Safety
+///
+/// For any unsafe auto trait, its own safety preconditions must be satisfied by any type made up of other types which implement that trait.
+///
+/// # Codegen
+///
+/// ```ignore
+/// trait Marker {}
+///
+/// impl __auto_Marker_inner for u16 {}
+/// impl __auto_Marker_inner for u32 {}
+/// impl __auto_Marker_inner for usize {}
+///
+/// impl<T> Marker for T
+/// where
+///     T: Auto,
+///     T::Fields: __auto_Marker_inner,
+/// {
+/// }
+///
+/// #[allow(non_camel_case_types)]
+/// trait __auto_Marker_inner {}
+///
+/// impl<T: __auto_Marker_inner> __auto_Marker_inner for AllImpl<T> {}
+///
+/// impl<T: Marker> __auto_Marker_inner for Leaf<T> {}
+///
+/// impl<A, B> __auto_Marker_inner for (A, B)
+/// where
+///     A: Auto,
+///     B: Auto,
+///     A::Fields: Marker,
+///     B::Fields: Marker,
+/// {
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn auto_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
     if !attr.is_empty() {
@@ -81,6 +120,8 @@ mod auto_opaque;
 /// Implements `Auto` for a type as opaque to the trait solver.
 ///
 /// This will implement auto traits only if they explicitly implement it. Useful for [`PhantomPinned`](core::marker::PhantomPinned)-like markers.
+///
+/// # Codegen
 ///
 /// ```ignore
 /// struct ImplAuto1;
@@ -103,6 +144,8 @@ mod derive_auto;
 /// Derives an auto implementation from the acutal field types.
 ///
 /// This is usually the macro to safely implement `Auto`.
+///
+/// # Codegen
 ///
 /// ```ignore
 /// struct ImplAuto1 {

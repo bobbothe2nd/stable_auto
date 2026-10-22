@@ -1,3 +1,5 @@
+extern crate stable_auto;
+
 use std::mem::ManuallyDrop;
 
 use stable_auto::{Auto, auto_trait, auto_opaque, auto_leaf};

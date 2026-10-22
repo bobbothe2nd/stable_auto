@@ -38,10 +38,10 @@ pub fn extract_named_fields(
                 ));
             };
 
-            if let TokenTree::Punct(punct) = &token
-                && *punct == ':'
-            {
-                break;
+            if let TokenTree::Punct(punct) = &token {
+                if *punct == ':' {
+                    break;
+                }
             }
         }
 

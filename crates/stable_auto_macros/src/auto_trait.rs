@@ -2,6 +2,8 @@ use proc_macro::{Delimiter, Group, Ident, Spacing, Span, TokenStream, TokenTree}
 
 use crate::{ident, is_ident, punct};
 
+use std::iter::FromIterator;
+
 pub fn auto_trait_inner(input: TokenStream) -> TokenStream {
     let mut tokens = input.into_iter();
     let mut output = TokenStream::new();

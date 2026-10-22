@@ -1,5 +1,7 @@
 use proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 
+use std::iter::FromIterator;
+
 use crate::{
     fields::{extract_enum_types, extract_named_fields, extract_tuple_fields}, generics::{extract_generics, extract_where_clause}, ident, punct,
 };
