@@ -1,11 +1,13 @@
 //! Simulating `auto trait`s on stable Rust through blanket `impl`s
 
+#![cfg_attr(rust_channel = "nightly", feature(f16))]
+
 #![forbid(missing_docs)]
 #![no_std]
 
+extern crate stable_auto_macros;
 #[cfg(feature = "alloc")]
 extern crate alloc;
-extern crate stable_auto_macros;
 #[cfg(feature = "std")]
 extern crate std;
 
