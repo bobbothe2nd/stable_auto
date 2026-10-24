@@ -15,4 +15,4 @@ alloc = []
 stable_auto_macros = { version = "0.1.0", path = "../stable_auto_macros" }
 
 [build-dependencies]
-rust-ver = "0.1.2"
+rust-ver = "0.1.3"

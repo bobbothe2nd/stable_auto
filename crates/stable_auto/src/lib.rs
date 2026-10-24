@@ -1,7 +1,5 @@
 //! Simulating `auto trait`s on stable Rust through blanket `impl`s
 
-#![cfg_attr(rust_channel = "nightly", feature(f16))]
-
 #![forbid(missing_docs)]
 #![no_std]
 
@@ -102,6 +100,15 @@ unsafe impl<T: Auto, const N: usize> Auto for [T; N] {
 }
 
 macro_rules! impl_auto_leaf {
+    (<P: Pattern> $($ty:ident$(<$lifetime:lifetime>)?)*) => {$(
+        impl_auto_leaf!($ty<$($lifetime)?, &str>);
+        impl_auto_leaf!($ty<$($lifetime)?, char>);
+        impl_auto_leaf!($ty<$($lifetime)?, &[char]>);
+        unsafe impl<P: FnMut(char) -> bool> Auto for $ty<$($lifetime)?, P> {
+            type Fields = AllImpl<Self>;
+        }
+    )*};
+
     ($(<$($generics:ident$(: ?$Sized:ident)?),*> $ty:ty)*) => {$(
         unsafe impl <$($generics: Auto $(+ ?$Sized)?),*> Auto for $ty {
             type Fields = AllImpl<Self>;
@@ -118,3 +125,13 @@ macro_rules! impl_auto_leaf {
 #[rustfmt::skip]
 #[allow(clippy::incompatible_msrv)]
 mod leaf;
+
+#[cfg(feature = "alloc")]
+#[rustfmt::skip]
+#[allow(clippy::incompatible_msrv)]
+mod leaf_alloc;
+
+#[cfg(feature = "std")]
+#[rustfmt::skip]
+#[allow(clippy::incompatible_msrv)]
+mod leaf_std;

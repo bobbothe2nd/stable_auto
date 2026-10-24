@@ -1,14 +1,35 @@
-use super::{Auto, AllImpl};
+use crate::{Auto, AllImpl};
 
 use core::{
     cell::{BorrowError, BorrowMutError, Cell, Ref, RefCell, RefMut, UnsafeCell},
     any::TypeId,
     ascii::EscapeDefault,
-    char::{EscapeDefault as CharDefault, EscapeDebug as CharDebug, EscapeUnicode as CharUnicode, ToLowercase as CharLower, ToUppercase as CharUpper, DecodeUtf16, DecodeUtf16Error, CharTryFromError, TryFromCharError},
+    str::{
+        Bytes, CharIndices, Chars, MatchIndices, RMatchIndices, RMatches, RSplit, RSplitN, RSplitTerminator,
+        Utf8Chunk, Utf8Chunks, Utf8Error, EncodeUtf16, EscapeUnicode, Lines, Split, SplitAsciiWhitespace, SplitN, SplitTerminator,
+        SplitWhitespace, EscapeDebug as StrDebug, EscapeDefault as StrDefault,
+    },
+    array::{IntoIter, TryFromSliceError},
+    char::{EscapeDefault as CharDefault, EscapeDebug as CharDebug, EscapeUnicode as CharUnicode, ToLowercase, ToUppercase, DecodeUtf16, DecodeUtf16Error, CharTryFromError, TryFromCharError},
     convert::Infallible,
     marker::{PhantomPinned, PhantomData},
     num::{NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize, NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroIsize, Wrapping},
     mem::{Discriminant, ManuallyDrop, MaybeUninit},
+    ptr::NonNull,
+    cmp::{Ordering, Reverse},
+    ops::{Bound, ControlFlow, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive},
+    range::{
+        legacy::{Range as LegacyRange, RangeFrom as LegacyRangeFrom, RangeInclusive as LegacyRangeInclusive, RangeToInclusive as LegacyRangeToInclusive},
+        Range as Range2, RangeFrom as RangeFrom2, RangeFromIter, RangeFull as RangeFull2, RangeInclusive as RangeInclusive2, RangeInclusiveIter, RangeIter, RangeTo as RangeTo2, RangeToInclusive as RangeToInclusive2,
+    },
+    future::{Pending, PollFn, Ready},
+    task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
+    net::{AddrParseError, IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
+    hash::BuildHasherDefault,
+    time::{Duration, TryFromFloatSecsError},
+    slice,
+    fmt,
+    iter,
 };
 
 impl_auto_leaf!(
@@ -21,8 +42,8 @@ impl_auto_leaf!(
     NonZeroI8 NonZeroI16 NonZeroI32 NonZeroI64 NonZeroI128 NonZeroIsize
 
     DecodeUtf16Error EscapeDefault
-    str
-    char CharDebug CharDefault CharUnicode CharLower CharUpper CharTryFromError TryFromCharError
+    str Bytes<'_> Chars<'_> CharIndices<'_> EscapeUnicode<'_> StrDebug<'_> StrDefault<'_> EncodeUtf16<'_> Utf8Chunks<'_> Utf8Error Lines<'_> SplitAsciiWhitespace<'_> SplitWhitespace<'_> Utf8Chunk<'_>
+    char CharDebug CharDefault CharUnicode ToLowercase ToUppercase CharTryFromError TryFromCharError
 
     TypeId Infallible PhantomPinned
 
@@ -30,9 +51,6 @@ impl_auto_leaf!(
 
     core::alloc::Layout core::alloc::LayoutError
 );
-
-#[cfg(any(rust_channel = "nightly"))]
-impl_auto_leaf!(f16);
 
 impl_auto_leaf!(
     <T> Wrapping<T>
@@ -47,7 +65,13 @@ impl_auto_leaf!(
     <T> Discriminant<T>
     <T> ManuallyDrop<T>
     <T> MaybeUninit<T>
+    <T> NonNull<T>
     <T> [T]
+);
+
+impl_auto_leaf!(
+    <P: Pattern>
+    MatchIndices<'_> Split<'_> SplitN<'_> SplitTerminator<'_> RMatchIndices<'_> RMatches<'_> RSplit<'_> RSplitN<'_> RSplitTerminator<'_>
 );
 
 unsafe impl<T: Iterator<Item = u16>> Auto for DecodeUtf16<T> {
@@ -81,6 +105,11 @@ impl_auto_leaf!(AtomicUsize AtomicIsize);
 #[cfg(target_has_atomic = "ptr")]
 impl_auto_leaf!(<T> AtomicPtr<T>);
 
+#[cfg(split_inclusive)]
+use core::str::SplitInclusive;
+#[cfg(split_inclusive)]
+impl_auto_leaf!(<P: Pattern> SplitInclusive<'_>);
+
 #[cfg(once_cell)]
 impl_auto_leaf!(<T> core::cell::OnceCell<T>);
 #[cfg(lazy_cell)]
@@ -96,53 +125,6 @@ impl_auto_leaf!(
 );
 #[cfg(cstr_until_nul)]
 impl_auto_leaf!(core::ffi::FromBytesUntilNulError);
-
-#[cfg(feature = "alloc")]
-use alloc::{
-    borrow::{Cow, ToOwned},
-    boxed::Box,
-    rc::Rc,
-    string::String,
-    sync::Arc,
-    vec::{Drain, ExtractIf, IntoIter, Splice, Vec},
-};
-#[cfg(feature = "alloc")]
-impl_auto_leaf!(String);
-#[cfg(feature = "alloc")]
-impl_auto_leaf!(
-    <T> Vec<T>
-    <T> Drain<'_, T>
-    <T, F> ExtractIf<'_, T, F>
-    <T> IntoIter<T>
-    <T: ?Sized> Box<T>
-    <T: ?Sized> Rc<T>
-    <T: ?Sized> Arc<T>
-);
-
-#[cfg(feature = "alloc")]
-unsafe impl<I: Iterator> Auto for Splice<'_, I> {
-    type Fields = AllImpl<Self>;
-}
-#[cfg(feature = "alloc")]
-unsafe impl<T: ?Sized + ToOwned> Auto for Cow<'_, T> {
-    type Fields = AllImpl<Self>;
-}
-
-#[cfg(all(feature = "alloc", boxed_arr_iter))]
-unsafe impl<T, const N: usize> Auto for alloc::boxed::BoxedArrayIntoIter<T, N> {
-    type Fields = AllImpl<Self>;
-}
-
-#[cfg(feature = "alloc")]
-impl_auto_leaf!(
-    <T: ?Sized> alloc::rc::Weak<T>
-    <T: ?Sized> alloc::sync::Weak<T>
-);
-
-#[cfg(all(feature = "alloc", cstr))]
-use alloc::ffi::{CString, NulError, FromVecWithNulError, IntoStringError};
-#[cfg(all(feature = "alloc", cstr))]
-impl_auto_leaf!(CString NulError FromVecWithNulError IntoStringError);
 
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::{
