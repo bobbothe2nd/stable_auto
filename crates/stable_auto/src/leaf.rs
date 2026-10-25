@@ -9,7 +9,7 @@ use core::{
         Utf8Chunk, Utf8Chunks, Utf8Error, EncodeUtf16, EscapeUnicode, Lines, Split, SplitAsciiWhitespace, SplitN, SplitTerminator,
         SplitWhitespace, EscapeDebug as StrDebug, EscapeDefault as StrDefault,
     },
-    array::{IntoIter, TryFromSliceError},
+    array::TryFromSliceError,
     char::{EscapeDefault as CharDefault, EscapeDebug as CharDebug, EscapeUnicode as CharUnicode, ToLowercase, ToUppercase, DecodeUtf16, DecodeUtf16Error, CharTryFromError, TryFromCharError},
     convert::Infallible,
     marker::{PhantomPinned, PhantomData},
@@ -17,18 +17,14 @@ use core::{
     mem::{Discriminant, ManuallyDrop, MaybeUninit},
     ptr::NonNull,
     cmp::{Ordering, Reverse},
-    ops::{Bound, ControlFlow, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive},
-    range::{
-        legacy::{Range as LegacyRange, RangeFrom as LegacyRangeFrom, RangeInclusive as LegacyRangeInclusive, RangeToInclusive as LegacyRangeToInclusive},
-        Range as Range2, RangeFrom as RangeFrom2, RangeFromIter, RangeFull as RangeFull2, RangeInclusive as RangeInclusive2, RangeInclusiveIter, RangeIter, RangeTo as RangeTo2, RangeToInclusive as RangeToInclusive2,
-    },
+    ops::{Bound, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive},
     future::{Pending, PollFn, Ready},
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
     net::{AddrParseError, IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
     hash::BuildHasherDefault,
     time::{Duration, TryFromFloatSecsError},
     slice,
-    fmt,
+    fmt::{Alignment, Arguments, DebugList, DebugMap, DebugSet, DebugStruct, DebugTuple, Error, Formatter, FromFn},
     iter,
 };
 
@@ -50,6 +46,20 @@ impl_auto_leaf!(
     BorrowError BorrowMutError
 
     core::alloc::Layout core::alloc::LayoutError
+
+    Ordering
+
+    Context<'_> RawWaker RawWakerVTable Waker
+
+    AddrParseError IpAddr Ipv4Addr Ipv6Addr SocketAddr SocketAddrV4 SocketAddrV6
+
+    Alignment Arguments<'_> DebugList<'_, '_> DebugMap<'_, '_> DebugSet<'_, '_> DebugStruct<'_, '_> DebugTuple<'_, '_> Error Formatter<'_>
+
+    Duration TryFromFloatSecsError
+
+    TryFromSliceError
+
+    RangeFull
 );
 
 impl_auto_leaf!(
@@ -66,6 +76,19 @@ impl_auto_leaf!(
     <T> ManuallyDrop<T>
     <T> MaybeUninit<T>
     <T> NonNull<T>
+    <T> Reverse<T>
+    <T> BuildHasherDefault<T>
+    <T> Pending<T>
+    <T> Ready<T>
+    <T> PollFn<T>
+    <T> Poll<T>
+    <T> FromFn<T>
+    <T> Bound<T>
+    <T> Range<T>
+    <T> RangeTo<T>
+    <T> RangeFrom<T>
+    <T> RangeToInclusive<T>
+    <T> RangeInclusive<T>
     <T> [T]
 );
 
@@ -157,3 +180,48 @@ use core::arch::x86_64::{__m512, __m512d, __m512i};
 #[cfg(avx512_types)]
 #[cfg(target_arch = "x86_64")]
 impl_auto_leaf!(__m512 __m512d __m512i);
+
+#[cfg(new_range)]
+use core::range::{
+    Range as Range2, RangeFrom as RangeFrom2, RangeToInclusive as RangeToInclusive2, RangeFromIter, RangeIter,
+};
+#[cfg(new_range)]
+impl_auto_leaf!(
+    <T> RangeIter<T>
+    <T> RangeFromIter<T>
+    <T> Range2<T>
+    <T> RangeFrom2<T>
+    <T> RangeToInclusive2<T>
+);
+
+#[cfg(new_range_inclusive)]
+use core::range::{
+    RangeInclusive as RangeInclusive2, RangeInclusiveIter,
+};
+#[cfg(new_range_inclusive)]
+impl_auto_leaf!(
+    <T> RangeInclusive2<T>
+    <T> RangeInclusiveIter<T>
+);
+
+#[cfg(num_buffer)]
+use core::fmt::NumBuffer;
+#[cfg(num_buffer)]
+impl_auto_leaf!(
+    NumBuffer<u8> NumBuffer<u16> NumBuffer<u32> NumBuffer<u64> NumBuffer<u128> NumBuffer<usize>
+    NumBuffer<i8> NumBuffer<i16> NumBuffer<i32> NumBuffer<i64> NumBuffer<i128> NumBuffer<isize>
+);
+
+#[cfg(control_flow)]
+use core::ops::ControlFlow;
+#[cfg(control_flow)]
+impl_auto_leaf!(
+    <B, C> ControlFlow<B, C>
+);
+
+#[cfg(arr_iter)]
+use core::array::IntoIter;
+#[cfg(arr_iter)]
+unsafe impl<T, const N: usize> Auto for IntoIter<T, N> {
+    type Fields = AllImpl<Self>;
+}

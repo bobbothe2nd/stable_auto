@@ -3,6 +3,8 @@
 #![forbid(missing_docs)]
 #![no_std]
 
+#![allow(clippy::incompatible_msrv)]
+
 extern crate stable_auto_macros;
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -66,6 +68,8 @@ pub struct AllImpl<T: ?Sized = ()>(PhantomData<T>);
 /// # Safety
 ///
 /// An `Auto` implementation must choose `Fields` such that every safety-relevant property that is supposed to propagate through the auto trait is correctly represented by `Fields`.
+///
+/// `type Fields = AllImpl<Self>` is always safe.
 pub unsafe trait Auto {
     /// Must represent all the unique types contained within this type; else unsound
     type Fields: private::SealedTuple;
@@ -123,15 +127,12 @@ macro_rules! impl_auto_leaf {
 }
 
 #[rustfmt::skip]
-#[allow(clippy::incompatible_msrv)]
 mod leaf;
 
 #[cfg(feature = "alloc")]
 #[rustfmt::skip]
-#[allow(clippy::incompatible_msrv)]
 mod leaf_alloc;
 
 #[cfg(feature = "std")]
 #[rustfmt::skip]
-#[allow(clippy::incompatible_msrv)]
 mod leaf_std;
