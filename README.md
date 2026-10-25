@@ -1,10 +1,10 @@
 # Stable Auto (`stable_auto`)
 
-This crate offers 4 macros, 1 trait, and 2 types for one goal:
+This crate offers 4 macros, 1 trait, and 2 types for one goal: Implementing traits that aren't even in your dependency graph for your types using auto traits on stable rust.
 
-- Implementing traits that aren't even in youR dependency graph for your types using auto traits on stable rust.
+Much like unstable `auto trait`s, this crate implements traits for types containing only other types which implement that trait.
 
-One major issue is that you cant implement both `Auto` and an `auto_trait` for the same type due to rust's coherence rules.
+## Usage
 
 ```rust
 use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto};
@@ -17,11 +17,10 @@ where
 }
 
 auto_leaf! {
+    impl Marker for u16 {}
     impl Marker for u32 {}
     impl Marker for usize {}
-    impl<T: Marker> Marker for &T {}
     impl<T: Marker, const N: usize> Marker for [T; N] {}
-    impl Marker for u16 {}
     impl Marker for PhantomMarked<'_> {}
 }
 
@@ -42,7 +41,7 @@ struct ImplAuto3<'a, T: Clone = usize>
 where
     T: Send,
 {
-    _a: &'a PhantomMarked<'a>,
+    _a: PhantomMarked<'a>,
     _b: [u16; 3],
     _c: T,
 }
