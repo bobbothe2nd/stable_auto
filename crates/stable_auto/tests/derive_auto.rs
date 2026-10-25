@@ -1,7 +1,3 @@
-extern crate stable_auto;
-
-use std::mem::ManuallyDrop;
-
 use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto};
 
 #[auto_trait]
@@ -12,7 +8,7 @@ auto_leaf! {
     impl Marker for u32 {}
     impl Marker for usize {}
     impl Marker for PhantomMarked {}
-    impl<T> Marker for ManuallyDrop<T> {}
+    impl<T> Marker for core::mem::ManuallyDrop<T> {}
 }
 
 #[auto_opaque]
@@ -48,7 +44,7 @@ enum EnumAuto3 {
 
 #[derive(Auto)]
 union UnionAuto3 {
-    _a: ManuallyDrop<ImplAuto2>,
+    _a: core::mem::ManuallyDrop<ImplAuto2>,
     _b: u16,
     _c: usize,
 }

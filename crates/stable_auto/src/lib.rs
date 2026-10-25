@@ -3,7 +3,6 @@
 #![forbid(missing_docs)]
 #![no_std]
 
-extern crate stable_auto_macros;
 #[cfg(feature = "alloc")]
 extern crate alloc;
 #[cfg(feature = "std")]

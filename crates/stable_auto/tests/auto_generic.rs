@@ -1,6 +1,4 @@
-extern crate stable_auto;
-
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto};
 
@@ -20,7 +18,6 @@ auto_leaf! {
 
 mod impls {
     stable_auto::auto_leaf! {
-        // parse paths!!
         impl super::Marker for u16 {}
         impl super::Marker for super::PhantomMarked<'_> {}
     }
