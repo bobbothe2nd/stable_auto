@@ -6,3 +6,6 @@ edition = "2018"
 
 [lib]
 proc-macro = true
+
+[dev-dependencies]
+stable_auto = { version = "0.1.0", path = "../stable_auto" }

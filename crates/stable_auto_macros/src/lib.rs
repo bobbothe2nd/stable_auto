@@ -76,7 +76,8 @@ mod auto_trait;
 ///
 /// # Codegen
 ///
-/// ```ignore
+/// ```rust
+/// # use stable_auto::*;
 /// trait Marker {}
 ///
 /// impl __auto_Marker_inner for u16 {}
@@ -123,7 +124,8 @@ mod auto_opaque;
 ///
 /// # Codegen
 ///
-/// ```ignore
+/// ```rust
+/// # use stable_auto::*;
 /// struct ImplAuto1;
 ///
 /// unsafe impl Auto for ImplAuto1 {
@@ -147,7 +149,8 @@ mod derive_auto;
 ///
 /// # Codegen
 ///
-/// ```ignore
+/// ```rust
+/// # use stable_auto::*;
 /// struct ImplAuto1 {
 ///     _a: u32,
 ///     _b: u16,

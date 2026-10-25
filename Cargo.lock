@@ -19,3 +19,6 @@ dependencies = [
 [[package]]
 name = "stable_auto_macros"
 version = "0.1.0"
+dependencies = [
+ "stable_auto",
+]
