@@ -6,11 +6,11 @@ use core::{
     ascii::EscapeDefault,
     str::{
         Bytes, CharIndices, Chars, MatchIndices, RMatchIndices, RMatches, RSplit, RSplitN, RSplitTerminator,
-        Utf8Chunk, Utf8Chunks, Utf8Error, EncodeUtf16, EscapeUnicode, Lines, Split, SplitAsciiWhitespace, SplitN, SplitTerminator,
+        Utf8Error, EncodeUtf16, EscapeUnicode, Lines, Split, SplitAsciiWhitespace, SplitN, SplitTerminator,
         SplitWhitespace, EscapeDebug as StrDebug, EscapeDefault as StrDefault,
     },
     array::TryFromSliceError,
-    char::{EscapeDefault as CharDefault, EscapeDebug as CharDebug, EscapeUnicode as CharUnicode, ToLowercase, ToUppercase, DecodeUtf16, DecodeUtf16Error, CharTryFromError, TryFromCharError},
+    char::{EscapeDefault as CharDefault, EscapeDebug as CharDebug, EscapeUnicode as CharUnicode, ToLowercase, ToUppercase, DecodeUtf16, DecodeUtf16Error, CharTryFromError},
     convert::Infallible,
     marker::{PhantomPinned, PhantomData},
     num::{NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize, NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroIsize, Wrapping},
@@ -18,13 +18,13 @@ use core::{
     ptr::NonNull,
     cmp::{Ordering, Reverse},
     ops::{Bound, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive},
-    future::{Pending, PollFn, Ready},
+    future::{Pending, Ready},
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
     net::{AddrParseError, IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
     hash::BuildHasherDefault,
-    time::{Duration, TryFromFloatSecsError},
+    time::Duration,
     slice,
-    fmt::{Alignment, Arguments, DebugList, DebugMap, DebugSet, DebugStruct, DebugTuple, Error, Formatter, FromFn},
+    fmt::{Alignment, Arguments, DebugList, DebugMap, DebugSet, DebugStruct, DebugTuple, Error, Formatter},
     iter,
 };
 
@@ -38,8 +38,8 @@ impl_auto_leaf!(
     NonZeroI8 NonZeroI16 NonZeroI32 NonZeroI64 NonZeroI128 NonZeroIsize
 
     DecodeUtf16Error EscapeDefault
-    str Bytes<'_> Chars<'_> CharIndices<'_> EscapeUnicode<'_> StrDebug<'_> StrDefault<'_> EncodeUtf16<'_> Utf8Chunks<'_> Utf8Error Lines<'_> SplitAsciiWhitespace<'_> SplitWhitespace<'_> Utf8Chunk<'_>
-    char CharDebug CharDefault CharUnicode ToLowercase ToUppercase CharTryFromError TryFromCharError
+    str Bytes<'_> Chars<'_> CharIndices<'_> EscapeUnicode<'_> StrDebug<'_> StrDefault<'_> EncodeUtf16<'_> Utf8Error Lines<'_> SplitAsciiWhitespace<'_> SplitWhitespace<'_>
+    char CharDebug CharDefault CharUnicode ToLowercase ToUppercase CharTryFromError
 
     TypeId Infallible PhantomPinned
 
@@ -55,7 +55,7 @@ impl_auto_leaf!(
 
     Alignment Arguments<'_> DebugList<'_, '_> DebugMap<'_, '_> DebugSet<'_, '_> DebugStruct<'_, '_> DebugTuple<'_, '_> Error Formatter<'_>
 
-    Duration TryFromFloatSecsError
+    Duration
 
     TryFromSliceError
 
@@ -80,9 +80,7 @@ impl_auto_leaf!(
     <T> BuildHasherDefault<T>
     <T> Pending<T>
     <T> Ready<T>
-    <T> PollFn<T>
     <T> Poll<T>
-    <T> FromFn<T>
     <T> Bound<T>
     <T> Range<T>
     <T> RangeTo<T>
@@ -128,6 +126,21 @@ impl_auto_leaf!(AtomicUsize AtomicIsize);
 #[cfg(target_has_atomic = "ptr")]
 impl_auto_leaf!(<T> AtomicPtr<T>);
 
+#[cfg(utf8_chunks)]
+impl_auto_leaf!(core::str::Utf8Chunks<'_> core::str::Utf8Chunk<'_>);
+
+#[cfg(u8_from_char)]
+impl_auto_leaf!(core::char::TryFromCharError);
+
+#[cfg(duration_checked_float)]
+impl_auto_leaf!(core::time::TryFromFloatSecsError);
+
+#[cfg(fmt_from_fn)]
+impl_auto_leaf!(<T> core::fmt::FromFn<T>);
+
+#[cfg(poll_fn)]
+impl_auto_leaf!(<T> core::future::PollFn<T>);
+
 #[cfg(split_inclusive)]
 use core::str::SplitInclusive;
 #[cfg(split_inclusive)]
@@ -148,38 +161,6 @@ impl_auto_leaf!(
 );
 #[cfg(cstr_until_nul)]
 impl_auto_leaf!(core::ffi::FromBytesUntilNulError);
-
-#[cfg(target_arch = "x86_64")]
-use core::arch::x86_64::{
-    __m128, __m128d, __m128i,
-    __m256, __m256d, __m256i,
-};
-#[cfg(target_arch = "x86_64")]
-impl_auto_leaf!(
-    __m128 __m128d __m128i
-    __m256 __m256d __m256i
-);
-
-#[cfg(u16_simd)]
-#[cfg(target_arch = "x86_64")]
-use core::arch::x86_64::{__m128bh, __m256bh, __m512bh};
-#[cfg(u16_simd)]
-#[cfg(target_arch = "x86_64")]
-impl_auto_leaf!(__m128bh __m256bh __m512bh);
-
-#[cfg(f16_simd)]
-#[cfg(target_arch = "x86_64")]
-use core::arch::x86_64::{__m128h, __m256h, __m512h};
-#[cfg(f16_simd)]
-#[cfg(target_arch = "x86_64")]
-impl_auto_leaf!(__m128h __m256h __m512h);
-
-#[cfg(avx512_types)]
-#[cfg(target_arch = "x86_64")]
-use core::arch::x86_64::{__m512, __m512d, __m512i};
-#[cfg(avx512_types)]
-#[cfg(target_arch = "x86_64")]
-impl_auto_leaf!(__m512 __m512d __m512i);
 
 #[cfg(new_range)]
 use core::range::{

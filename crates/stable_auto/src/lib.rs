@@ -3,8 +3,6 @@
 #![forbid(missing_docs)]
 #![no_std]
 
-#![allow(clippy::incompatible_msrv)]
-
 extern crate stable_auto_macros;
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -114,20 +112,23 @@ macro_rules! impl_auto_leaf {
     )*};
 
     ($(<$($generics:ident$(: ?$Sized:ident)?),*> $ty:ty)*) => {$(
-        unsafe impl <$($generics: Auto $(+ ?$Sized)?),*> Auto for $ty {
-            type Fields = AllImpl<Self>;
+        unsafe impl <$($generics: $(?$Sized)?),*> $crate::Auto for $ty {
+            type Fields = $crate::AllImpl<Self>;
         }
     )*};
 
     ($($ty:ty)*) => {$(
-        unsafe impl Auto for $ty {
-            type Fields = AllImpl<Self>;
+        unsafe impl $crate::Auto for $ty {
+            type Fields = $crate::AllImpl<Self>;
         }
     )*};
 }
 
 #[rustfmt::skip]
 mod leaf;
+
+#[rustfmt::skip]
+mod leaf_arch;
 
 #[cfg(feature = "alloc")]
 #[rustfmt::skip]
@@ -136,3 +137,7 @@ mod leaf_alloc;
 #[cfg(feature = "std")]
 #[rustfmt::skip]
 mod leaf_std;
+
+#[cfg(feature = "std")]
+#[rustfmt::skip]
+mod leaf_os;

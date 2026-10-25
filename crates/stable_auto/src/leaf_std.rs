@@ -1,31 +1,40 @@
 use crate::{AllImpl, Auto};
 
 use std::{
-    backtrace::{Backtrace, BacktraceStatus},
-    os,
     io,
     fs,
     sync::{Barrier, BarrierWaitResult, Condvar, LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard, Mutex, MutexGuard, Once, TryLockResult, WaitTimeoutResult, PoisonError, mpsc},
     net::{AddrParseError, Incoming, IpAddr, Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr, SocketAddrV4, SocketAddrV6, TcpListener, TcpStream, UdpSocket},
     time::{Instant, SystemTime, SystemTimeError},
-    thread::{LocalKey, Result as ThrRes, Builder as ThrBuild, AccessError, Thread, ThreadId, JoinHandle, Scope, ScopedJoinHandle},
+    thread::{LocalKey, Builder as ThrBuild, AccessError, Thread, ThreadId, JoinHandle},
     alloc::System,
+    collections::{
+        HashMap, HashSet,
+        hash_map::{DefaultHasher, Drain as MapDrain, Entry, ExtractIf as MapExt, VacantEntry, Values, ValuesMut, Keys, IntoIter as MapIntoIter, IntoKeys, IntoValues, Iter as MapIter, IterMut},
+        hash_set::{Difference, Drain as SetExt, ExtractIf, SymmetricDifference, Intersection, IntoIter as SetIntoIter, Iter as SetIter, Union},
+    },
 };
 
 impl_auto_leaf!(
-    Backtrace BacktraceStatus
-
     Instant SystemTime SystemTimeError
 
-    ThrBuild AccessError Thread ThreadId Scope<'_, '_>
+    ThrBuild AccessError Thread ThreadId
+
+    System
 );
 
 impl_auto_leaf!(
     <T> LocalKey<T>
-    <T> ThrRes<T>
     <T> JoinHandle<T>
-    <T> ScopedJoinHandle<'_, T>
 );
+
+#[cfg(scoped_thread)]
+impl_auto_leaf!(std::thread::Scope<'_, '_>);
+#[cfg(scoped_thread)]
+impl_auto_leaf!(<T> std::thread::ScopedJoinHandle<'_, T>);
+
+#[cfg(backtrace)]
+impl_auto_leaf!(std::backtrace::Backtrace std::backtrace::BacktraceStatus);
 
 #[cfg(once_cell)]
 use std::sync::OnceLock;

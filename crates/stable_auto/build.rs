@@ -3,6 +3,9 @@ extern crate rust_ver;
 use rust_ver::{build::cfg_rust_threshold, ver::Version};
 
 fn main() {
+    cfg_rust_threshold("duration_checked_float", Version::new(1, 79, 0)).unwrap();
+    cfg_rust_threshold("utf8_chunks", Version::new(1, 79, 0)).unwrap();
+
     cfg_rust_threshold("split_inclusive", Version::new(1, 51, 0)).unwrap();
     cfg_rust_threshold("u8_from_char", Version::new(1, 59, 0)).unwrap();
 
@@ -30,4 +33,16 @@ fn main() {
     cfg_rust_threshold("new_range_inclusive", Version::new(1, 95, 0)).unwrap();
 
     cfg_rust_threshold("poll_fn", Version::new(1, 64, 0)).unwrap();
+
+    cfg_rust_threshold("fmt_from_fn", Version::new(1, 64, 0)).unwrap();
+
+    cfg_rust_threshold("backtrace", Version::new(1, 65, 0)).unwrap();
+
+    cfg_rust_threshold("try_reserve", Version::new(1, 57, 0)).unwrap();
+
+    cfg_rust_threshold("extract_if", Version::new(1, 87, 0)).unwrap();
+    cfg_rust_threshold("hash_extract_if", Version::new(1, 88, 0)).unwrap();
+    cfg_rust_threshold("btree_extract_if", Version::new(1, 91, 0)).unwrap();
+
+    cfg_rust_threshold("scoped_thread", Version::new(1, 91, 0)).unwrap();
 }
