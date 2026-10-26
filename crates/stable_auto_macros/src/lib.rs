@@ -66,8 +66,10 @@ mod auto_leaf;
 ///
 /// from:
 ///
-/// ```ignore
+/// ```rust
 /// # use stable_auto::*;
+/// # #[auto_trait]
+/// # trait Marker {}
 /// auto_leaf! {
 ///     impl Marker for u16 {}
 ///     impl Marker for u32 {}
@@ -77,7 +79,9 @@ mod auto_leaf;
 ///
 /// to roughly:
 ///
-/// ```ignore
+/// ```rust
+/// # #[stable_auto::auto_trait]
+/// # trait Marker {}
 /// impl __auto_Marker_inner for u16 {}
 /// impl __auto_Marker_inner for u32 {}
 /// impl __auto_Marker_inner for usize {}
@@ -99,7 +103,7 @@ mod auto_trait;
 ///
 /// from:
 ///
-/// ```ignore
+/// ```rust
 /// # use stable_auto::*;
 /// #[auto_trait]
 /// trait Marker {}
@@ -107,7 +111,7 @@ mod auto_trait;
 ///
 /// to roughly:
 ///
-/// ```ignore
+/// ```rust
 /// # use stable_auto::*;
 /// trait Marker {}
 /// impl<T> Marker for T
@@ -145,7 +149,7 @@ mod auto_opaque;
 ///
 /// from:
 ///
-/// ```ignore
+/// ```rust
 /// # use stable_auto::*;
 /// #[auto_opaque]
 /// struct ImplAuto1;
@@ -153,7 +157,7 @@ mod auto_opaque;
 ///
 /// to roughly:
 ///
-/// ```ignore
+/// ```rust
 /// # use stable_auto::*;
 /// struct ImplAuto1;
 ///
@@ -180,7 +184,7 @@ mod derive_auto;
 ///
 /// from:
 ///
-/// ```ignore
+/// ```rust
 /// # use stable_auto::*;
 /// #[derive(Auto)]
 /// struct ImplAuto1 {
@@ -191,7 +195,7 @@ mod derive_auto;
 ///
 /// to roughly:
 ///
-/// ```ignore
+/// ```rust
 /// # use stable_auto::*;
 /// struct ImplAuto1 {
 ///     _a: u32,
