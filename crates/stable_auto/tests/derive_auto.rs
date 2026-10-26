@@ -47,6 +47,9 @@ enum EnumAuto3 {
 union UnionAuto3 {
     _a: core::mem::ManuallyDrop<ImplAuto2>,
     _b: u16,
+    #[cfg(target_arch = "x86_64")]
+    _c: u32,
+    #[cfg(not(target_arch = "x86_64"))]
     _c: usize,
 }
 

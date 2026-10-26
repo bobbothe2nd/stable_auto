@@ -1,6 +1,8 @@
 use crate::{Auto, AllImpl};
 
 use core::{
+    result::{IntoIter as ResIntoIter, Iter as ResIter, IterMut as ResIterMut},
+    option::{IntoIter as OptIntoIter, Iter as OptIter, IterMut as OptIterMut},
     cell::{BorrowError, BorrowMutError, Cell, Ref, RefCell, RefMut, UnsafeCell},
     any::TypeId,
     ascii::EscapeDefault,
@@ -24,13 +26,13 @@ use core::{
     hash::BuildHasherDefault,
     time::Duration,
     slice::{
-        ArrayWindows, ChunkBy, ChunkByMut, Chunks, ChunksExact, ChunksExactMut, ChunksMut, Iter, IterMut, SliceIndex, Split, SplitInclusive,
-        SplitInclusiveMut, SplitMut, SplitN, SplitNMut, RChunks, RChunksExact, RChunksExactMut, RChunksMut, RSplit, RSplitMut, RSplitN, RSplitNMut,
+        Chunks, ChunksExact, ChunksExactMut, ChunksMut, Iter, IterMut, Split, SplitMut,
+        SplitN, SplitNMut, RChunks, RChunksExact, RChunksExactMut, RChunksMut, RSplit, RSplitMut, RSplitN, RSplitNMut,
     },
     fmt::{Alignment, Arguments, DebugList, DebugMap, DebugSet, DebugStruct, DebugTuple, Error, Formatter},
     iter::{
-        Chain, Cloned, Copied, Cycle, Empty, Enumerate, Filter, FilterMap, FlatMap, Flatten, FromFn, Fuse, Inspect, Map, MapWhile,
-        Once, OnceWith, Peekable, Repeat, RepeatN, RepeatWith, Rev, Scan, Skip, SkipWhile, StepBy, Successors, Take, TakeWhile, Zip,
+        Chain, Cloned, Copied, Cycle, Empty, Enumerate, Filter, FilterMap, FlatMap, Flatten, FromFn, Fuse, Inspect, Map,
+        Once, OnceWith, Peekable, Repeat, RepeatWith, Rev, Scan, Skip, SkipWhile, StepBy, Successors, Take, TakeWhile, Zip,
     },
 };
 
@@ -72,7 +74,13 @@ impl_auto_leaf!(
     <T> Wrapping<T>
 
     <T, E> Result<T, E>
+    <T> ResIntoIter<T>
+    <T> ResIter<'_, T>
+    <T> ResIterMut<'_, T>
     <T> Option<T>
+    <T> OptIntoIter<T>
+    <T> OptIter<'_, T>
+    <T> OptIterMut<'_, T>
 
     <T> PhantomData<T>
 
@@ -102,21 +110,30 @@ impl_auto_leaf!(
     <T> RangeInclusive<T>
 
     <T> [T]
+    <T> Iter<'_, T>
+    <T> IterMut<'_, T>
+    <T> Chunks<'_, T>
+    <T> ChunksMut<'_, T>
+    <T> ChunksExact<'_, T>
+    <T> ChunksExactMut<'_, T>
+    <T> RChunks<'_, T>
+    <T> RChunksMut<'_, T>
+    <T> RChunksExact<'_, T>
+    <T> RChunksExactMut<'_, T>
 
     <T> Reverse<T>
 
     <T> Once<T>
     <F> OnceWith<F>
     <T> Repeat<T>
-    <T> RepeatN<T>
     <T> RepeatWith<T>
     <T> Empty<T>
+    <F> FromFn<F>
 
     <I, S, F> Scan<I, S, F>
     <I, F> Inspect<I, F>
     <I, F> Successors<I, F>
     <I, F> Map<I, F>
-    <I, P> MapWhile<I, P>
 
     <I> Skip<I>
     <I, F> SkipWhile<I, F>
@@ -141,7 +158,86 @@ impl_auto_leaf!(
     MatchIndices<'_> StrSplit<'_> StrSplitN<'_> SplitTerminator<'_> RMatchIndices<'_> RMatches<'_> StrRSplit<'_> StrRSplitN<'_> RSplitTerminator<'_>
 );
 
-unsafe impl<T: Iterator<Item = u16>> Auto for DecodeUtf16<T> {
+unsafe impl<I: Iterator<Item = u16>> Auto for DecodeUtf16<I> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<I: Iterator> Auto for Peekable<I> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<I: Iterator, U: Iterator, F> Auto for FlatMap<I, U, F> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<I: Iterator<Item: IntoIterator>> Auto for Flatten<I> {
+    type Fields = AllImpl<Self>;
+}
+
+#[cfg(repeatn)]
+unsafe impl<I> Auto for core::iter::RepeatN<I> {
+    type Fields = AllImpl<Self>;
+}
+
+#[cfg(map_while)]
+unsafe impl<I, P> Auto for core::iter::MapWhile<I, P> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<'a, T: 'a, F: FnMut(&T) -> bool> Auto for Split<'a, T, F> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<'a, T: 'a, F: FnMut(&T) -> bool> Auto for SplitMut<'a, T, F> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<'a, T: 'a, F: FnMut(&T) -> bool> Auto for SplitN<'a, T, F> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<'a, T: 'a, F: FnMut(&T) -> bool> Auto for SplitNMut<'a, T, F> {
+    type Fields = AllImpl<Self>;
+}
+
+#[cfg(arr_win)]
+unsafe impl<'a, T: 'a, const N: usize> Auto for core::slice::ArrayWindows<'a, T, N> {
+    type Fields = AllImpl<Self>;
+}
+
+#[cfg(chunkby)]
+unsafe impl<'a, T: 'a, P> Auto for core::slice::ChunkBy<'a, T, P> {
+    type Fields = AllImpl<Self>;
+}
+
+#[cfg(chunkby)]
+unsafe impl<'a, T: 'a, P> Auto for core::slice::ChunkByMut<'a, T, P> {
+    type Fields = AllImpl<Self>;
+}
+
+#[cfg(split_inclusive)]
+unsafe impl<'a, T: 'a, F: FnMut(&T) -> bool> Auto for core::slice::SplitInclusive<'a, T, F> {
+    type Fields = AllImpl<Self>;
+}
+
+#[cfg(split_inclusive)]
+unsafe impl<'a, T: 'a, F: FnMut(&T) -> bool> Auto for core::slice::SplitInclusiveMut<'a, T, F> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<'a, T: 'a, F: FnMut(&T) -> bool> Auto for RSplit<'a, T, F> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<'a, T: 'a, F: FnMut(&T) -> bool> Auto for RSplitMut<'a, T, F> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<'a, T: 'a, F: FnMut(&T) -> bool> Auto for RSplitN<'a, T, F> {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<'a, T: 'a, F: FnMut(&T) -> bool> Auto for RSplitNMut<'a, T, F> {
     type Fields = AllImpl<Self>;
 }
 
@@ -222,13 +318,9 @@ impl_auto_leaf!(
 );
 
 #[cfg(new_range_inclusive)]
-use core::range::{
-    RangeInclusive as RangeInclusive2, RangeInclusiveIter,
-};
-#[cfg(new_range_inclusive)]
 impl_auto_leaf!(
-    <T> RangeInclusive2<T>
-    <T> RangeInclusiveIter<T>
+    <T> core::range::RangeInclusive<T>
+    <T> core::range::RangeInclusiveIter<T>
 );
 
 #[cfg(num_buffer)]
@@ -240,15 +332,11 @@ impl_auto_leaf!(
 );
 
 #[cfg(control_flow)]
-use core::ops::ControlFlow;
-#[cfg(control_flow)]
 impl_auto_leaf!(
-    <B, C> ControlFlow<B, C>
+    <B, C> core::ops::ControlFlow<B, C>
 );
 
 #[cfg(arr_iter)]
-use core::array::IntoIter;
-#[cfg(arr_iter)]
-unsafe impl<T, const N: usize> Auto for IntoIter<T, N> {
+unsafe impl<T, const N: usize> Auto for core::array::IntoIter<T, N> {
     type Fields = AllImpl<Self>;
 }
