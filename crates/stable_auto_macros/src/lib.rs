@@ -61,6 +61,27 @@ mod auto_leaf;
 /// Transforms a clean `impl Marker` into the uglier internal implementation for auto traits.
 ///
 /// Use this for defining the base cases for a marker trait on foreign types.
+///
+/// # Codegen
+///
+/// from:
+///
+/// ```ignore
+/// # use stable_auto::*;
+/// auto_leaf! {
+///     impl Marker for u16 {}
+///     impl Marker for u32 {}
+///     impl Marker for usize {}
+/// }
+/// ```
+///
+/// to roughly:
+///
+/// ```ignore
+/// impl __auto_Marker_inner for u16 {}
+/// impl __auto_Marker_inner for u32 {}
+/// impl __auto_Marker_inner for usize {}
+/// ```
 #[proc_macro]
 pub fn auto_leaf(input: TokenStream) -> TokenStream {
     auto_leaf::auto_leaf_inner(input)
@@ -76,36 +97,34 @@ mod auto_trait;
 ///
 /// # Codegen
 ///
-/// ```rust
+/// from:
+///
+/// ```ignore
+/// # use stable_auto::*;
+/// #[auto_trait]
+/// trait Marker {}
+/// ```
+///
+/// to roughly:
+///
+/// ```ignore
 /// # use stable_auto::*;
 /// trait Marker {}
-///
-/// impl __auto_Marker_inner for u16 {}
-/// impl __auto_Marker_inner for u32 {}
-/// impl __auto_Marker_inner for usize {}
-///
 /// impl<T> Marker for T
 /// where
 ///     T: Auto,
 ///     T::Fields: __auto_Marker_inner,
-/// {
-/// }
-///
-/// #[allow(non_camel_case_types)]
+/// {}
 /// trait __auto_Marker_inner {}
-///
 /// impl<T: __auto_Marker_inner> __auto_Marker_inner for AllImpl<T> {}
-///
 /// impl<T: Marker> __auto_Marker_inner for Leaf<T> {}
-///
 /// impl<A, B> __auto_Marker_inner for (A, B)
 /// where
 ///     A: Auto,
 ///     B: Auto,
 ///     A::Fields: Marker,
 ///     B::Fields: Marker,
-/// {
-/// }
+/// {}
 /// ```
 #[proc_macro_attribute]
 pub fn auto_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -124,12 +143,22 @@ mod auto_opaque;
 ///
 /// # Codegen
 ///
-/// ```rust
+/// from:
+///
+/// ```ignore
+/// # use stable_auto::*;
+/// #[auto_opaque]
+/// struct ImplAuto1;
+/// ```
+///
+/// to roughly:
+///
+/// ```ignore
 /// # use stable_auto::*;
 /// struct ImplAuto1;
 ///
 /// unsafe impl Auto for ImplAuto1 {
-///     type Fields = AllImpl<u32>;
+///     type Fields = AllImpl<Self>;
 /// }
 /// ```
 #[proc_macro_attribute]
@@ -149,7 +178,20 @@ mod derive_auto;
 ///
 /// # Codegen
 ///
-/// ```rust
+/// from:
+///
+/// ```ignore
+/// # use stable_auto::*;
+/// #[derive(Auto)]
+/// struct ImplAuto1 {
+///     _a: u32,
+///     _b: u16,
+/// }
+/// ```
+///
+/// to roughly:
+///
+/// ```ignore
 /// # use stable_auto::*;
 /// struct ImplAuto1 {
 ///     _a: u32,

@@ -4,10 +4,13 @@ description = "Simulating `auto trait`s on stable Rust through blanket `impl`s"
 version = "0.1.0"
 rust-version = "1.50"
 edition = "2018"
+license = "MIT"
+documentation = "https://docs.rs/stable_auto"
+repository = "https://github.com/bobbothe2nd/stable_auto"
+keywords = ["auto-trait", "traits", "impl", "implementation"]
+categories = ["rust-patterns", "development-tools", "no-std", "no-std::no-alloc"]
 
 [features]
-default = ["std"]
-
 std = ["alloc"]
 alloc = []
 
@@ -15,4 +18,4 @@ alloc = []
 stable_auto_macros = { version = "0.1.0", path = "../stable_auto_macros" }
 
 [build-dependencies]
-rust-ver = "0.1.3"
+rust-ver = "0.1"
