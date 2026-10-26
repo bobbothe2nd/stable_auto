@@ -7,6 +7,7 @@ edition = "2018"
 license = "MIT"
 documentation = "https://docs.rs/stable_auto_macros"
 repository = "https://github.com/bobbothe2nd/stable_auto"
+readme = "../README.md"
 
 [lib]
 proc-macro = true

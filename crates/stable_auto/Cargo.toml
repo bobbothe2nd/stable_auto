@@ -9,6 +9,7 @@ documentation = "https://docs.rs/stable_auto"
 repository = "https://github.com/bobbothe2nd/stable_auto"
 keywords = ["auto-trait", "traits", "impl", "implementation"]
 categories = ["rust-patterns", "development-tools", "no-std", "no-std::no-alloc"]
+readme = "../README.md"
 
 [features]
 std = ["alloc"]
