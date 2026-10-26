@@ -9,6 +9,7 @@ auto_leaf! {
     impl Marker for usize {}
     impl Marker for PhantomMarked {}
     impl<T> Marker for core::mem::ManuallyDrop<T> {}
+    impl Marker for fn(u8) -> u16 {}
 }
 
 #[auto_opaque]
@@ -49,6 +50,12 @@ union UnionAuto3 {
     _c: usize,
 }
 
+#[derive(Auto)]
+struct ParseFn {
+    _f: fn(u8) -> u16,
+    _leaf: stable_auto::Leaf<fn(u8) -> u16,>,
+}
+
 fn if_auto<T: Marker>() {}
 
 #[test]
@@ -60,6 +67,7 @@ fn auto_leaf() {
     if_auto::<ImplAuto3>();
     if_auto::<EnumAuto3>();
     if_auto::<UnionAuto3>();
+    if_auto::<ParseFn>();
 
     let _ = PhantomNotMarked;
     let _ = ImplAuto1(0).0;

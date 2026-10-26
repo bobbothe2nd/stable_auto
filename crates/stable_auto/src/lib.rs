@@ -88,6 +88,14 @@ unsafe impl<T: ?Sized> Auto for &mut T {
     type Fields = AllImpl<Self>;
 }
 
+unsafe impl<T: ?Sized> Auto for *const T {
+    type Fields = AllImpl<Self>;
+}
+
+unsafe impl<T: ?Sized> Auto for *mut T {
+    type Fields = AllImpl<Self>;
+}
+
 unsafe impl Auto for () {
     type Fields = Self;
 }

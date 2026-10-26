@@ -41,6 +41,7 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
 
         let mut ty = TokenStream::new();
         let mut depth = 0;
+        let mut arrow = false;
 
         let body = loop {
             let Some(token) = tokens.next() else {
@@ -61,7 +62,15 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
                 }
 
                 TokenTree::Punct(punct) if punct == '>' => {
-                    depth -= 1;
+                    if !arrow {
+                        depth -= 1;
+                    }
+                    arrow = false;
+                    ty.extend([TokenTree::Punct(punct)]);
+                }
+
+                TokenTree::Punct(punct) if punct == '-' => {
+                    arrow = true;
                     ty.extend([TokenTree::Punct(punct)]);
                 }
 

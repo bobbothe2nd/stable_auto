@@ -61,27 +61,33 @@ where
 {
     let mut ty = TokenStream::new();
     let mut depth = 0usize;
+    let mut arrow = false;
 
     while let Some(token) = tokens.peek() {
         match token {
             TokenTree::Punct(punct) if *punct == '<' => {
                 depth += 1;
-                ty.extend([tokens.next().unwrap()]);
             }
 
             TokenTree::Punct(punct) if *punct == '>' && depth > 0 => {
-                depth -= 1;
-                ty.extend([tokens.next().unwrap()]);
+                if !arrow {
+                    depth -= 1;
+                }
+                arrow = false;
+            }
+
+            TokenTree::Punct(punct) if *punct == '-' => {
+                arrow = true;
             }
 
             TokenTree::Punct(punct) if *punct == ',' && depth == 0 => {
                 break;
             }
 
-            _ => {
-                ty.extend([tokens.next().unwrap()]);
-            }
+            _ => {}
         }
+
+        ty.extend([tokens.next().unwrap()]);
     }
 
     Ok(ty)

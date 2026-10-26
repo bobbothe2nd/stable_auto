@@ -93,7 +93,7 @@ impl_auto_leaf!(<T> std::thread::ScopedJoinHandle<'_, T>);
 #[cfg(backtrace)]
 impl_auto_leaf!(std::backtrace::Backtrace std::backtrace::BacktraceStatus);
 
-#[cfg(file_time)]
+#[cfg(file_times)]
 impl_auto_leaf!(std::fs::FileTimes);
 
 #[cfg(once_cell)]

@@ -25,7 +25,14 @@ mod wasip2 {
 
 #[cfg(target_family = "windows")]
 mod windows {
-    // use std::os::windows;
+    use std::os::windows::{
+        ffi::EncodeWide,
+        io::{BorrowedHandle, BorrowedSocket, HandleOrInvalid, HandleOrNull, InvalidHandleError, NullHandleError, OwnedHandle, OwnedSocket},
+    };
+
+    impl_auto_leaf!(
+        EncodeWide<'_> BorrowedHandle<'_> BorrowedSocket<'_> HandleOrInvalid HandleOrNull InvalidHandleError NullHandleError OwnedHandle OwnedSocket
+    );
 }
 
 #[cfg(target_os = "aix")]
