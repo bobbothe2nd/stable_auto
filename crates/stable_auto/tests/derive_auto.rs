@@ -56,7 +56,7 @@ union UnionAuto3 {
 #[derive(Auto)]
 struct ParseFn {
     _f: fn(u8) -> u16,
-    _leaf: stable_auto::Leaf<fn(u8) -> u16,>,
+    _leaf: stable_auto::Leaf<fn(u8) -> u16>,
 }
 
 fn if_auto<T: Marker>() {}

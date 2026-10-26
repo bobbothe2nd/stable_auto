@@ -93,8 +93,8 @@ impl_auto_leaf!(
 
 #[cfg(into_valkey)]
 impl_auto_leaf!(
-    <K, V> std::collections::btree_map::IntoValues<K, V>
-    <K, V> std::collections::btree_map::IntoKeys<K, V>
+    <K, V> alloc::collections::btree_map::IntoValues<K, V>
+    <K, V> alloc::collections::btree_map::IntoKeys<K, V>
 );
 
 #[cfg(boxed_arr_iter)]

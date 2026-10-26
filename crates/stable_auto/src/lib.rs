@@ -1,5 +1,6 @@
 //! Simulating `auto trait`s on stable Rust through blanket `impl`s
 
+#![allow(clippy::incompatible_msrv)]
 #![forbid(missing_docs)]
 #![no_std]
 

@@ -82,13 +82,13 @@ impl_auto_leaf!(
     <T> OptIter<'_, T>
     <T> OptIterMut<'_, T>
 
-    <T> PhantomData<T>
+    <T: ?Sized> PhantomData<T>
 
-    <T> UnsafeCell<T>
-    <T> Cell<T>
-    <T> RefCell<T>
-    <T> Ref<'_, T>
-    <T> RefMut<'_, T>
+    <T: ?Sized> UnsafeCell<T>
+    <T: ?Sized> Cell<T>
+    <T: ?Sized> RefCell<T>
+    <T: ?Sized> Ref<'_, T>
+    <T: ?Sized> RefMut<'_, T>
 
     <T> Discriminant<T>
     <T> ManuallyDrop<T>

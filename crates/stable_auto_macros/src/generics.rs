@@ -1,5 +1,5 @@
-use proc_macro::{Delimiter, Ident, Spacing, Span, TokenStream, TokenTree};
 use core::iter::Peekable;
+use proc_macro::{Delimiter, Ident, Spacing, Span, TokenStream, TokenTree};
 
 use crate::punct;
 

@@ -14,7 +14,7 @@ pub fn auto_trait_inner(input: TokenStream) -> TokenStream {
         };
 
         let mut unsafe_keyword = None;
-        
+
         if is_ident(&token, "unsafe") {
             output.extend([token.clone()]);
             unsafe_keyword = Some(token);

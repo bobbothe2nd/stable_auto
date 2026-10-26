@@ -4,6 +4,9 @@ fn main() {
     cfg_rust_threshold("duration_checked_float", Version::new(1, 79, 0)).unwrap();
     cfg_rust_threshold("utf8_chunks", Version::new(1, 79, 0)).unwrap();
 
+    cfg_rust_threshold("repeatn", Version::new(1, 82, 0)).unwrap();
+    cfg_rust_threshold("map_while", Version::new(1, 57, 0)).unwrap();
+
     cfg_rust_threshold("chunkby", Version::new(1, 82, 0)).unwrap();
     cfg_rust_threshold("arr_win", Version::new(1, 94, 0)).unwrap();
     cfg_rust_threshold("split_inclusive", Version::new(1, 51, 0)).unwrap();
@@ -50,8 +53,8 @@ fn main() {
 
     cfg_rust_threshold("file_times", Version::new(1, 75, 0)).unwrap();
 
-    cfg_rust_threshold("win_io", Version::new(1, 51, 0)).unwrap();
+    cfg_rust_threshold("anonymous_pipe", Version::new(1, 56, 0)).unwrap();
+    cfg_rust_threshold("panic_write", Version::new(1, 56, 0)).unwrap();
 
-    cfg_rust_threshold("repeatn", Version::new(1, 82, 0)).unwrap();
-    cfg_rust_threshold("map_while", Version::new(1, 57, 0)).unwrap();
+    cfg_rust_threshold("win_io", Version::new(1, 51, 0)).unwrap();
 }

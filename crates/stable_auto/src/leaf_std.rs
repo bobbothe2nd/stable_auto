@@ -1,5 +1,10 @@
+use crate::{AllImpl, Auto};
+
 use std::{
-    io,
+    io::{
+        BufReader, BufWriter, Bytes, Chain, Cursor, Empty, Error, ErrorKind, IntoInnerError, IoSlice, IoSliceMut, LineWriter, Lines, Repeat,
+        Sink, Split, Stderr, StderrLock, Stdin, StdinLock, Stdout, StdoutLock, Take, Write,
+    },
     fs::{DirBuilder, DirEntry, File, FileType, OpenOptions, Metadata, ReadDir, Permissions},
     sync::{
         Barrier, BarrierWaitResult, Condvar, RwLock, RwLockReadGuard, RwLockWriteGuard, Mutex, MutexGuard, Once, WaitTimeoutResult, PoisonError,
@@ -29,6 +34,8 @@ impl_auto_leaf!(
     TcpListener TcpStream UdpSocket Incoming<'_> Shutdown
 
     TryRecvError RecvError RecvTimeoutError
+
+    Empty Error ErrorKind IoSlice<'_> IoSliceMut<'_> Repeat Sink Stderr StderrLock<'_> Stdin StdinLock<'_> Stdout StdoutLock<'_>
 );
 
 impl_auto_leaf!(
@@ -71,7 +78,28 @@ impl_auto_leaf!(
     <T> SendError<T>
     <T> TrySendError<T>
     <T> Receiver<T>
+
+    <R: ?Sized> BufReader<R>
+    <R> Bytes<R>
+    <R> Lines<R>
+    <T, U> Chain<T, U>
+    <T> Cursor<T>
+    <W> IntoInnerError<W>
+    <T> Take<T>
+    <B> Split<B>
 );
+
+unsafe impl<R: Write + ?Sized> Auto for BufWriter<R> {
+    type Fields = AllImpl<Self>;
+}
+unsafe impl<R: Write + ?Sized> Auto for LineWriter<R> {
+    type Fields = AllImpl<Self>;
+}
+
+#[cfg(anonymous_pipe)]
+impl_auto_leaf!(std::io::PipeReader std::io::PipeWriter);
+#[cfg(panic_write)]
+impl_auto_leaf!(std::io::WriterPanicked);
 
 #[cfg(hash_extract_if)]
 impl_auto_leaf!(
