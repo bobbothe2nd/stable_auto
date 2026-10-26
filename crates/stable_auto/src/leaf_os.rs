@@ -1,6 +1,12 @@
 #[cfg(target_family = "unix")]
 mod unix {
-    // use std::os::unix;
+    use std::os::unix::net::{Incoming, SocketAddr, UnixStream, UnixDatagram, UnixListener};
+    impl_auto_leaf!(Incoming<'_> SocketAddr UnixDatagram UnixListener UnixStream);
+
+    #[cfg(io_safety)]
+    use std::os::unix::io::{BorrowedFd, OwnedFd};
+    #[cfg(io_safety)]
+    impl_auto_leaf!(BorrowedFd<'_> OwnedFd);
 }
 
 #[cfg(all(target_family = "unix", target_vendor = "apple"))]
@@ -13,9 +19,12 @@ mod linux {
     // use std::os::linux;
 }
 
-#[cfg(all(target_family = "wasm", any(target_env = "p1", target_env = "p2", target_env = "p3")))]
+#[cfg(all(target_family = "wasm", any(target_env = "p1", target_env = "p3")))]
 mod wasi {
-    // use std::os::wasi;
+    #[cfg(io_safety)]
+    use std::os::wasi::io::{BorrowedFd, OwnedFd};
+    #[cfg(io_safety)]
+    impl_auto_leaf!(BorrowedFd<'_> OwnedFd);
 }
 
 #[cfg(all(target_family = "wasm", target_env = "p2"))]

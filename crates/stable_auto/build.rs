@@ -57,4 +57,5 @@ fn main() {
     cfg_rust_threshold("panic_write", Version::new(1, 56, 0)).unwrap();
 
     cfg_rust_threshold("win_io", Version::new(1, 51, 0)).unwrap();
+    cfg_rust_threshold("io_safety", Version::new(1, 63, 0)).unwrap();
 }
