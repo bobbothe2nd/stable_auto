@@ -10,7 +10,7 @@ checksum = "23cb552b8a948a8495bbcf688ae6e9b0095b692428fa50545d1a3f1cc17661d3"
 
 [[package]]
 name = "stable_auto"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "rust-ver",
  "stable_auto_macros",
@@ -18,4 +18,4 @@ dependencies = [
 
 [[package]]
 name = "stable_auto_macros"
-version = "0.1.0"
+version = "0.1.1"

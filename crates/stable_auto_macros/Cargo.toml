@@ -1,13 +1,13 @@
 [package]
 name = "stable_auto_macros"
 description = "Simulating `auto trait`s on stable Rust through blanket `impl`s"
-version = "0.1.0"
+version = "0.1.1"
 rust-version = "1.50"
 edition = "2018"
 license = "MIT"
 documentation = "https://docs.rs/stable_auto_macros"
 repository = "https://github.com/bobbothe2nd/stable_auto"
-readme = "../README.md"
+readme = "../../README.md"
 
 [lib]
 proc-macro = true
