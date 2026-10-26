@@ -101,6 +101,12 @@ unsafe impl<T: Auto, const N: usize> Auto for [T; N] {
 }
 
 macro_rules! impl_auto_leaf {
+    ($(<$($generics:ident),*> fn($($args:ident),*)$(->$ret:ident)?)*) => {$(
+        unsafe impl <$($generics),*> $crate::Auto for fn($($args),*)$(->$ret)? {
+            type Fields = $crate::AllImpl<Self>;
+        }
+    )*};
+
     (<P: Pattern> $($ty:ident$(<$lifetime:lifetime>)?)*) => {$(
         impl_auto_leaf!($ty<$($lifetime)?, &str>);
         impl_auto_leaf!($ty<$($lifetime)?, char>);
@@ -122,6 +128,9 @@ macro_rules! impl_auto_leaf {
         }
     )*};
 }
+
+#[rustfmt::skip]
+mod funcs;
 
 #[rustfmt::skip]
 mod leaf;

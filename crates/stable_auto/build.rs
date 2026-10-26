@@ -44,5 +44,9 @@ fn main() {
     cfg_rust_threshold("hash_extract_if", Version::new(1, 88, 0)).unwrap();
     cfg_rust_threshold("btree_extract_if", Version::new(1, 91, 0)).unwrap();
 
+    cfg_rust_threshold("into_valkey", Version::new(1, 54, 0)).unwrap();
+
     cfg_rust_threshold("scoped_thread", Version::new(1, 91, 0)).unwrap();
+
+    cfg_rust_threshold("file_times", Version::new(1, 75, 0)).unwrap();
 }

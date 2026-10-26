@@ -9,7 +9,7 @@ use alloc::{
     vec::{Drain, IntoIter as VecIter, Splice, Vec},
     collections::{
         binary_heap::{BinaryHeap, Drain as HeapDrain, IntoIter as HeapIntoIter, Iter as HeapIter, PeekMut},
-        btree_map::{BTreeMap, Entry, ExtractIf as MapExt, VacantEntry, OccupiedEntry, IntoIter as MapIntoIter, IntoKeys, IntoValues, Iter as MapIter, IterMut as MapIterMut, Keys, Values, ValuesMut, Range, RangeMut},
+        btree_map::{BTreeMap, Entry, VacantEntry, OccupiedEntry, IntoIter as MapIntoIter, Iter as MapIter, IterMut as MapIterMut, Keys, Values, ValuesMut, Range, RangeMut},
         btree_set::{BTreeSet, Difference, Range as SetRange, Intersection, IntoIter as SetIntoIter, Iter as SetIter, Union, SymmetricDifference},
         linked_list::{LinkedList, IntoIter as LinkedIntoIter, Iter as LinkedIter, IterMut as LinkedIterMut},
         vec_deque::{VecDeque, Drain as DeqDrain, IntoIter as DeqIntoIter, Iter as DeqIter, IterMut as DeqIterMut},
@@ -55,14 +55,11 @@ impl_auto_leaf!(
 
     <K, V> BTreeMap<K, V>
     <K, V> Entry<'_, K, V>
-    <K, V, R, F> MapExt<'_, K, V, R, F>
     <K, V> VacantEntry<'_, K, V>
     <K, V> OccupiedEntry<'_, K, V>
     <K, V> MapIter<'_, K, V>
     <K, V> MapIterMut<'_, K, V>
     <K, V> MapIntoIter<K, V>
-    <K, V> IntoKeys<K, V>
-    <K, V> IntoValues<K, V>
     <K, V> Keys<'_, K, V>
     <K, V> Values<'_, K, V>
     <K, V> ValuesMut<'_, K, V>
@@ -90,7 +87,14 @@ impl_auto_leaf!(
 );
 #[cfg(btree_extract_if)]
 impl_auto_leaf!(
+    <K, V, R, F> alloc::collections::btree_map::ExtractIf<'_, K, V, R, F>
     <T, R, F> alloc::collections::btree_set::ExtractIf<'_, T, R, F>
+);
+
+#[cfg(into_valkey)]
+impl_auto_leaf!(
+    <K, V> std::collections::btree_map::IntoValues<K, V>
+    <K, V> std::collections::btree_map::IntoKeys<K, V>
 );
 
 #[cfg(boxed_arr_iter)]

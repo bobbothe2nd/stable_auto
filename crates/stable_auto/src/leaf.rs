@@ -5,9 +5,9 @@ use core::{
     any::TypeId,
     ascii::EscapeDefault,
     str::{
-        Bytes, CharIndices, Chars, MatchIndices, RMatchIndices, RMatches, RSplit, RSplitN, RSplitTerminator,
-        Utf8Error, EncodeUtf16, EscapeUnicode, Lines, Split, SplitAsciiWhitespace, SplitN, SplitTerminator,
-        SplitWhitespace, EscapeDebug as StrDebug, EscapeDefault as StrDefault,
+        Bytes, CharIndices, Chars, MatchIndices, RMatchIndices, RMatches, RSplit as StrRSplit, RSplitN as StrRSplitN,
+        RSplitTerminator, Utf8Error, EncodeUtf16, EscapeUnicode, Lines, Split as StrSplit, SplitAsciiWhitespace,
+        SplitN as StrSplitN, SplitTerminator, SplitWhitespace, EscapeDebug as StrDebug, EscapeDefault as StrDefault,
     },
     array::TryFromSliceError,
     char::{EscapeDefault as CharDefault, EscapeDebug as CharDebug, EscapeUnicode as CharUnicode, ToLowercase, ToUppercase, DecodeUtf16, DecodeUtf16Error, CharTryFromError},
@@ -23,9 +23,15 @@ use core::{
     net::{AddrParseError, IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
     hash::BuildHasherDefault,
     time::Duration,
-    slice,
+    slice::{
+        ArrayWindows, ChunkBy, ChunkByMut, Chunks, ChunksExact, ChunksExactMut, ChunksMut, Iter, IterMut, SliceIndex, Split, SplitInclusive,
+        SplitInclusiveMut, SplitMut, SplitN, SplitNMut, RChunks, RChunksExact, RChunksExactMut, RChunksMut, RSplit, RSplitMut, RSplitN, RSplitNMut,
+    },
     fmt::{Alignment, Arguments, DebugList, DebugMap, DebugSet, DebugStruct, DebugTuple, Error, Formatter},
-    iter,
+    iter::{
+        Chain, Cloned, Copied, Cycle, Empty, Enumerate, Filter, FilterMap, FlatMap, Flatten, FromFn, Fuse, Inspect, Map, MapWhile,
+        Once, OnceWith, Peekable, Repeat, RepeatN, RepeatWith, Rev, Scan, Skip, SkipWhile, StepBy, Successors, Take, TakeWhile, Zip,
+    },
 };
 
 impl_auto_leaf!(
@@ -64,35 +70,75 @@ impl_auto_leaf!(
 
 impl_auto_leaf!(
     <T> Wrapping<T>
+
     <T, E> Result<T, E>
     <T> Option<T>
+
     <T> PhantomData<T>
+
     <T> UnsafeCell<T>
     <T> Cell<T>
     <T> RefCell<T>
     <T> Ref<'_, T>
     <T> RefMut<'_, T>
+
     <T> Discriminant<T>
     <T> ManuallyDrop<T>
     <T> MaybeUninit<T>
+
     <T> NonNull<T>
-    <T> Reverse<T>
     <T> BuildHasherDefault<T>
+
     <T> Pending<T>
     <T> Ready<T>
     <T> Poll<T>
+
     <T> Bound<T>
+
     <T> Range<T>
     <T> RangeTo<T>
     <T> RangeFrom<T>
     <T> RangeToInclusive<T>
     <T> RangeInclusive<T>
+
     <T> [T]
+
+    <T> Reverse<T>
+
+    <T> Once<T>
+    <F> OnceWith<F>
+    <T> Repeat<T>
+    <T> RepeatN<T>
+    <T> RepeatWith<T>
+    <T> Empty<T>
+
+    <I, S, F> Scan<I, S, F>
+    <I, F> Inspect<I, F>
+    <I, F> Successors<I, F>
+    <I, F> Map<I, F>
+    <I, P> MapWhile<I, P>
+
+    <I> Skip<I>
+    <I, F> SkipWhile<I, F>
+    <I> Take<I>
+    <I, F> TakeWhile<I, F>
+    <I, P> Filter<I, P>
+    <I, P> FilterMap<I, P>
+
+    <I> Rev<I>
+    <I> Cycle<I>
+    <A, B> Chain<A, B>
+    <A, B> Zip<A, B>
+    <I> Cloned<I>
+    <I> Copied<I>
+    <I> StepBy<I>
+    <I> Fuse<I>
+    <I> Enumerate<I>
 );
 
 impl_auto_leaf!(
     <P: Pattern>
-    MatchIndices<'_> Split<'_> SplitN<'_> SplitTerminator<'_> RMatchIndices<'_> RMatches<'_> RSplit<'_> RSplitN<'_> RSplitTerminator<'_>
+    MatchIndices<'_> StrSplit<'_> StrSplitN<'_> SplitTerminator<'_> RMatchIndices<'_> RMatches<'_> StrRSplit<'_> StrRSplitN<'_> RSplitTerminator<'_>
 );
 
 unsafe impl<T: Iterator<Item = u16>> Auto for DecodeUtf16<T> {
@@ -142,9 +188,9 @@ impl_auto_leaf!(<T> core::fmt::FromFn<T>);
 impl_auto_leaf!(<T> core::future::PollFn<T>);
 
 #[cfg(split_inclusive)]
-use core::str::SplitInclusive;
+use core::str::SplitInclusive as StrSplitInclusive;
 #[cfg(split_inclusive)]
-impl_auto_leaf!(<P: Pattern> SplitInclusive<'_>);
+impl_auto_leaf!(<P: Pattern> StrSplitInclusive<'_>);
 
 #[cfg(once_cell)]
 impl_auto_leaf!(<T> core::cell::OnceCell<T>);

@@ -1,17 +1,17 @@
-use crate::{AllImpl, Auto};
-
 use std::{
     io,
-    fs,
-    sync::{Barrier, BarrierWaitResult, Condvar, LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard, Mutex, MutexGuard, Once, TryLockResult, WaitTimeoutResult, PoisonError, mpsc},
-    net::{AddrParseError, Incoming, IpAddr, Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr, SocketAddrV4, SocketAddrV6, TcpListener, TcpStream, UdpSocket},
+    fs::{DirBuilder, DirEntry, File, FileType, OpenOptions, Metadata, ReadDir, Permissions},
+    sync::{
+        Barrier, BarrierWaitResult, Condvar, RwLock, RwLockReadGuard, RwLockWriteGuard, Mutex, MutexGuard, Once, WaitTimeoutResult, PoisonError,
+        mpsc::{IntoIter as MpscIntoIter, Iter as MpscIter, TryIter as MpscTryIter, TryRecvError, TrySendError, Receiver, RecvError, RecvTimeoutError, SendError, Sender, SyncSender},
+    },
+    net::{Incoming, Shutdown, TcpListener, TcpStream, UdpSocket},
     time::{Instant, SystemTime, SystemTimeError},
     thread::{LocalKey, Builder as ThrBuild, AccessError, Thread, ThreadId, JoinHandle},
     alloc::System,
     collections::{
-        HashMap, HashSet,
-        hash_map::{DefaultHasher, Drain as MapDrain, Entry, ExtractIf as MapExt, VacantEntry, Values, ValuesMut, Keys, IntoIter as MapIntoIter, IntoKeys, IntoValues, Iter as MapIter, IterMut},
-        hash_set::{Difference, Drain as SetExt, ExtractIf, SymmetricDifference, Intersection, IntoIter as SetIntoIter, Iter as SetIter, Union},
+        hash_map::{HashMap, DefaultHasher, Drain as MapDrain, Entry, VacantEntry, OccupiedEntry, Values, ValuesMut, Keys, IntoIter as MapIntoIter, Iter as MapIter, IterMut as MapIterMut},
+        hash_set::{HashSet, Difference, Drain as SetDrain, SymmetricDifference, Intersection, IntoIter as SetIntoIter, Iter as SetIter, Union},
     },
 };
 
@@ -20,12 +20,69 @@ impl_auto_leaf!(
 
     ThrBuild AccessError Thread ThreadId
 
-    System
+    System DefaultHasher
+
+    Barrier BarrierWaitResult Condvar WaitTimeoutResult Once
+
+    DirBuilder DirEntry File FileType OpenOptions Metadata ReadDir Permissions
+
+    TcpListener TcpStream UdpSocket Incoming<'_> Shutdown
+
+    TryRecvError RecvError RecvTimeoutError
 );
 
 impl_auto_leaf!(
     <T> LocalKey<T>
     <T> JoinHandle<T>
+
+    <T, S> HashSet<T, S>
+    <K> SetIntoIter<K>
+    <K> SetIter<'_, K>
+    <K> SetDrain<'_, K>
+    <T, S> Difference<'_, T, S>
+    <T, S> SymmetricDifference<'_, T, S>
+    <T, S> Intersection<'_, T, S>
+    <T, S> Union<'_, T, S>
+
+    <K, V, S> HashMap<K, V, S>
+    <K, V> MapDrain<'_, K, V>
+    <K, V> MapIntoIter<K, V>
+    <K, V> MapIter<'_, K, V>
+    <K, V> MapIterMut<'_, K, V>
+    <K, V> Entry<'_, K, V>
+    <K, V> VacantEntry<'_, K, V>
+    <K, V> OccupiedEntry<'_, K, V>
+    <K, V> Values<'_, K, V>
+    <K, V> ValuesMut<'_, K, V>
+    <K, V> Keys<'_, K, V>
+
+    <T> PoisonError<T>
+    <T> Mutex<T>
+    <T> MutexGuard<'_, T>
+    <T> RwLock<T>
+    <T> RwLockReadGuard<'_, T>
+    <T> RwLockWriteGuard<'_, T>
+
+    <T> MpscIntoIter<T>
+    <T> MpscIter<'_, T>
+    <T> MpscTryIter<'_, T>
+    <T> Sender<T>
+    <T> SyncSender<T>
+    <T> SendError<T>
+    <T> TrySendError<T>
+    <T> Receiver<T>
+);
+
+#[cfg(hash_extract_if)]
+impl_auto_leaf!(
+    <K, F> std::collections::hash_set::ExtractIf<'_, K, F>
+    <K, V, F> std::collections::hash_map::ExtractIf<'_, K, V, F>
+);
+
+#[cfg(into_valkey)]
+impl_auto_leaf!(
+    <K, V> std::collections::hash_map::IntoValues<K, V>
+    <K, V> std::collections::hash_map::IntoKeys<K, V>
 );
 
 #[cfg(scoped_thread)]
@@ -36,11 +93,14 @@ impl_auto_leaf!(<T> std::thread::ScopedJoinHandle<'_, T>);
 #[cfg(backtrace)]
 impl_auto_leaf!(std::backtrace::Backtrace std::backtrace::BacktraceStatus);
 
+#[cfg(file_time)]
+impl_auto_leaf!(std::fs::FileTimes);
+
 #[cfg(once_cell)]
-use std::sync::OnceLock;
+impl_auto_leaf!(<T> std::sync::OnceLock<T>);
 
 #[cfg(once_poison)]
-use std::sync::OnceState;
+impl_auto_leaf!(std::sync::OnceState);
 
 #[cfg(lazy_cell)]
-use std::sync::LazyLock;
+impl_auto_leaf!(<T> std::sync::LazyLock<T>);
