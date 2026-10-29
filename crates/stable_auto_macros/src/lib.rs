@@ -1,5 +1,3 @@
-extern crate proc_macro;
-
 use proc_macro::{Punct, Spacing, Span, TokenStream, TokenTree};
 
 macro_rules! try_stream {
@@ -29,10 +27,7 @@ macro_rules! error {
 
         let args = ::proc_macro::TokenStream::from(::proc_macro::TokenTree::Literal(::proc_macro::Literal::string(&msg)));
 
-        tokens.extend([
-            ::proc_macro::TokenTree::Group(::proc_macro::Group::new(::proc_macro::Delimiter::Parenthesis, args)),
-            $crate::punct(';', ::proc_macro::Spacing::Alone),
-        ]);
+        tokens.extend([::proc_macro::TokenTree::Group(::proc_macro::Group::new(::proc_macro::Delimiter::Brace, args))]);
 
         tokens
     }};
