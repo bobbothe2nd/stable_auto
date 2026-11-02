@@ -1,4 +1,7 @@
-use rust_ver::{build::{cfg_rust_threshold, rerun_if_rustc_changed}, ver::Version};
+use rust_ver::{
+    build::{cfg_rust_threshold, rerun_if_rustc_changed},
+    ver::Version,
+};
 
 fn main() {
     rerun_if_rustc_changed();
