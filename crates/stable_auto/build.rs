@@ -1,6 +1,8 @@
-use rust_ver::{build::cfg_rust_threshold, ver::Version};
+use rust_ver::{build::{cfg_rust_threshold, rerun_if_rustc_changed}, ver::Version};
 
 fn main() {
+    rerun_if_rustc_changed();
+
     cfg_rust_threshold("duration_checked_float", Version::new(1, 79, 0)).unwrap();
     cfg_rust_threshold("utf8_chunks", Version::new(1, 79, 0)).unwrap();
 
