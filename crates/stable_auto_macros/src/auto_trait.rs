@@ -29,9 +29,12 @@ pub fn auto_trait_inner(input: TokenStream) -> TokenStream {
             continue;
         }
 
-        let Some(TokenTree::Ident(trait_name)) = tokens.next() else {
-            return error!(token.span(), "expected trait name after `trait`");
+        let trait_name = match tokens.next() {
+            Some(TokenTree::Ident(trait_name)) => trait_name,
+            Some(token) => return error!(token.span(), "expected trait name after `trait"),
+            None => return error!(token.span(), "expected trait name after `trait`"),
         };
+        token.set_span(trait_name.span());
 
         let inner_name = format!("__auto_{trait_name}_inner");
 

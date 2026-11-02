@@ -26,10 +26,9 @@ pub fn auto_opaque_inner(input: TokenStream) -> TokenStream {
             continue;
         }
 
-        let Some(TokenTree::Ident(mut name)) = tokens.next() else {
+        let Some(TokenTree::Ident(name)) = tokens.next() else {
             return error!(keyword.span(), "expected type name after {keyword}");
         };
-        name.set_span(Span::call_site());
 
         output.extend([keyword, TokenTree::Ident(name.clone())]);
 

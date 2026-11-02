@@ -1,7 +1,7 @@
 [package]
 name = "stable_auto_macros"
 description = "Simulating `auto trait`s on stable Rust through blanket `impl`s"
-version = "0.1.1"
+version = "0.1.2"
 rust-version = "1.50"
 edition = "2018"
 license = "MIT"
