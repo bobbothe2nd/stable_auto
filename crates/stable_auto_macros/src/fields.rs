@@ -142,9 +142,9 @@ pub fn extract_enum_types(
     Ok(types)
 }
 
-pub fn extract_repr(tokens: &mut std::iter::Peekable<impl Iterator<Item = TokenTree>>)
-    -> Option<TokenStream>
-{
+pub fn extract_repr(
+    tokens: &mut std::iter::Peekable<impl Iterator<Item = TokenTree>>,
+) -> Option<TokenStream> {
     while matches!(tokens.peek(), Some(TokenTree::Punct(p)) if p.as_char() == '#') {
         tokens.next();
 
@@ -189,7 +189,16 @@ pub fn extract_repr(tokens: &mut std::iter::Peekable<impl Iterator<Item = TokenT
 fn is_integer_repr(name: &str) -> bool {
     matches!(
         name,
-        "u8" | "u16" | "u32" | "u64" | "u128" | "usize"
-            | "i8" | "i16" | "i32" | "i64" | "i128" | "isize"
+        "u8" | "u16"
+            | "u32"
+            | "u64"
+            | "u128"
+            | "usize"
+            | "i8"
+            | "i16"
+            | "i32"
+            | "i64"
+            | "i128"
+            | "isize"
     )
 }

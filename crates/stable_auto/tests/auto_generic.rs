@@ -37,8 +37,7 @@ where
     _marker: PhantomData<&'a (T, [T; N])>,
 }
 
-#[derive(Debug)]
-#[derive(Auto, Clone)]
+#[derive(Debug, Auto, Clone)]
 #[repr(C)]
 struct ImplAuto3<'a, T: Clone = usize>
 where

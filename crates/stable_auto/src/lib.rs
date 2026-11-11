@@ -96,9 +96,6 @@ unsafe impl<T: ?Sized> Auto for *mut T {
 unsafe impl Auto for () {
     type Fields = Self;
 }
-unsafe impl<A, B> Auto for (A, B) {
-    type Fields = (AllImpl<A>, AllImpl<B>);
-}
 unsafe impl<T, const N: usize> Auto for [T; N] {
     type Fields = AllImpl<Self>;
 }
@@ -134,10 +131,11 @@ macro_rules! impl_auto_leaf {
 
 #[rustfmt::skip]
 mod funcs;
+#[rustfmt::skip]
+mod tuples;
 
 #[rustfmt::skip]
 mod leaf;
-
 #[rustfmt::skip]
 mod leaf_arch;
 
@@ -148,7 +146,6 @@ mod leaf_alloc;
 #[cfg(feature = "std")]
 #[rustfmt::skip]
 mod leaf_std;
-
 #[cfg(feature = "std")]
 #[rustfmt::skip]
 mod leaf_os;
