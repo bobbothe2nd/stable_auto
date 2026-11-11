@@ -3,14 +3,14 @@ use proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 use std::iter::FromIterator;
 
 use crate::{
-    fields::{extract_enum_types, extract_named_fields, extract_tuple_fields},
-    generics::{extract_generics, extract_where_clause},
-    ident, punct,
+    fields::{extract_enum_types, extract_named_fields, extract_repr, extract_tuple_fields}, generics::{extract_generics, extract_where_clause}, ident, punct,
 };
 
 pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
     let mut tokens = input.into_iter().peekable();
     let mut output = TokenStream::new();
+
+    let repr = extract_repr(&mut tokens);
 
     let Some(TokenTree::Ident(keyword)) = tokens.next() else {
         return error!(Span::call_site(), "expected a type declaration");
@@ -36,7 +36,7 @@ pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
             Delimiter::None => Vec::new(),
             _ => unreachable!(),
         },
-        "enum" => try_stream!(extract_enum_types(fields.stream())),
+        "enum" => try_stream!(extract_enum_types(fields.stream(), repr)),
         "union" => try_stream!(extract_named_fields(fields.stream())),
         _ => unreachable!(),
     };

@@ -28,10 +28,6 @@ fn main() {
     cfg_rust_threshold("once_cell", Version::new(1, 70, 0)).unwrap();
     cfg_rust_threshold("lazy_cell", Version::new(1, 80, 0)).unwrap();
 
-    cfg_rust_threshold("avx512_types", Version::new(1, 72, 0)).unwrap();
-    cfg_rust_threshold("u16_simd", Version::new(1, 89, 0)).unwrap();
-    cfg_rust_threshold("f16_simd", Version::new(1, 94, 0)).unwrap();
-
     cfg_rust_threshold("arr_iter", Version::new(1, 51, 0)).unwrap();
     cfg_rust_threshold("boxed_arr_iter", Version::new(1, 99, 0)).unwrap();
 
@@ -63,4 +59,10 @@ fn main() {
 
     cfg_rust_threshold("win_io", Version::new(1, 51, 0)).unwrap();
     cfg_rust_threshold("io_safety", Version::new(1, 63, 0)).unwrap();
+
+    cfg_rust_threshold("avx512_types", Version::new(1, 72, 0)).unwrap();
+    cfg_rust_threshold("u16_simd", Version::new(1, 89, 0)).unwrap();
+    cfg_rust_threshold("f16_simd", Version::new(1, 94, 0)).unwrap();
+    cfg_rust_threshold("neon_intr", Version::new(1, 59, 0)).unwrap();
+    cfg_rust_threshold("wasm_simd", Version::new(1, 54, 0)).unwrap();
 }

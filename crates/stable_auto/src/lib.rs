@@ -40,11 +40,13 @@ pub struct AllImpl<T: ?Sized = ()>(PhantomData<T>);
 ///
 /// ```rust
 /// # use std::cell::UnsafeCell;
+/// unsafe trait Send2 {}
+///
 /// struct Foo {
 ///     a: UnsafeCell<u32>,
 /// }
 ///
-/// unsafe impl Send for Foo {}
+/// unsafe impl Send2 for Foo {}
 /// ```
 ///
 /// and:
@@ -76,46 +78,40 @@ pub unsafe trait Auto {
 unsafe impl<T: ?Sized> Auto for AllImpl<T> {
     type Fields = Self;
 }
-
 unsafe impl<T: ?Sized> Auto for Leaf<T> {
     type Fields = Self;
 }
-
 unsafe impl<T: ?Sized> Auto for &T {
     type Fields = AllImpl<Self>;
 }
-
 unsafe impl<T: ?Sized> Auto for &mut T {
     type Fields = AllImpl<Self>;
 }
-
 unsafe impl<T: ?Sized> Auto for *const T {
     type Fields = AllImpl<Self>;
 }
-
 unsafe impl<T: ?Sized> Auto for *mut T {
     type Fields = AllImpl<Self>;
 }
-
 unsafe impl Auto for () {
     type Fields = Self;
 }
-
-unsafe impl<A: Auto, B: Auto> Auto for (A, B) {
+unsafe impl<A, B> Auto for (A, B) {
     type Fields = (AllImpl<A>, AllImpl<B>);
 }
-
-unsafe impl<T: Auto, const N: usize> Auto for [T; N] {
+unsafe impl<T, const N: usize> Auto for [T; N] {
     type Fields = AllImpl<Self>;
 }
 
 macro_rules! impl_auto_leaf {
-    ($(<$($generics:ident),*> fn($($args:ident),*)$(->$ret:ident)?)*) => {$(
-        unsafe impl <$($generics),*> $crate::Auto for fn($($args),*)$(->$ret)? {
+    ($(<$($generics:ident),*> $(extern $extern:literal)? fn($($args:ident),*$(,)?)$(->$ret:ident)?)*) => {$(
+        unsafe impl <$($generics),*> $crate::Auto for $(extern $extern)? fn($($args),*)$(->$ret)? {
+            type Fields = $crate::AllImpl<Self>;
+        }
+        unsafe impl <$($generics),*> $crate::Auto for unsafe $(extern $extern)? fn($($args),*)$(->$ret)? {
             type Fields = $crate::AllImpl<Self>;
         }
     )*};
-
     (<P: Pattern> $($ty:ident$(<$lifetime:lifetime>)?)*) => {$(
         impl_auto_leaf!($ty<$($lifetime)?, &str>);
         impl_auto_leaf!($ty<$($lifetime)?, char>);
@@ -124,13 +120,11 @@ macro_rules! impl_auto_leaf {
             type Fields = AllImpl<Self>;
         }
     )*};
-
     ($(<$($generics:ident$(: ?$Sized:ident)?),*> $ty:ty)*) => {$(
         unsafe impl <$($generics: $(?$Sized)?),*> $crate::Auto for $ty {
             type Fields = $crate::AllImpl<Self>;
         }
     )*};
-
     ($($ty:ty)*) => {$(
         unsafe impl $crate::Auto for $ty {
             type Fields = $crate::AllImpl<Self>;

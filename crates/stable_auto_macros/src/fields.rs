@@ -93,7 +93,14 @@ where
     Ok(ty)
 }
 
-pub fn extract_enum_types(body: TokenStream) -> Result<Vec<TokenStream>, TokenStream> {
+pub fn extract_enum_types(
+    body: TokenStream,
+    repr: Option<TokenStream>,
+) -> Result<Vec<TokenStream>, TokenStream> {
+    if let Some(repr) = repr {
+        return Ok(vec![repr]);
+    }
+
     let mut tokens = body.into_iter().peekable();
     let mut types = Vec::new();
 
@@ -133,4 +140,56 @@ pub fn extract_enum_types(body: TokenStream) -> Result<Vec<TokenStream>, TokenSt
     }
 
     Ok(types)
+}
+
+pub fn extract_repr(tokens: &mut std::iter::Peekable<impl Iterator<Item = TokenTree>>)
+    -> Option<TokenStream>
+{
+    while matches!(tokens.peek(), Some(TokenTree::Punct(p)) if p.as_char() == '#') {
+        tokens.next();
+
+        let Some(TokenTree::Group(attribute)) = tokens.next() else {
+            continue;
+        };
+
+        if attribute.delimiter() != Delimiter::Bracket {
+            continue;
+        }
+
+        let mut attr = attribute.stream().into_iter();
+
+        let Some(TokenTree::Ident(name)) = attr.next() else {
+            continue;
+        };
+
+        if name.to_string() != "repr" {
+            continue;
+        }
+
+        let Some(TokenTree::Group(repr)) = attr.next() else {
+            continue;
+        };
+
+        if repr.delimiter() != Delimiter::Parenthesis {
+            continue;
+        }
+
+        for token in repr.stream() {
+            if let TokenTree::Ident(ident) = token {
+                if is_integer_repr(&ident.to_string()) {
+                    return Some(TokenStream::from(TokenTree::Ident(ident)));
+                }
+            }
+        }
+    }
+
+    None
+}
+
+fn is_integer_repr(name: &str) -> bool {
+    matches!(
+        name,
+        "u8" | "u16" | "u32" | "u64" | "u128" | "usize"
+            | "i8" | "i16" | "i32" | "i64" | "i128" | "isize"
+    )
 }
