@@ -14,8 +14,13 @@ pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
 
     let repr = extract_repr(&mut tokens);
 
-    let Some(TokenTree::Ident(keyword)) = tokens.next() else {
-        return error!(Span::call_site(), "expected a type declaration");
+    let keyword = loop {
+        if let Some(TokenTree::Ident(keyword)) = tokens.next() {
+            if keyword.to_string() == "pub" {
+                continue;
+            }
+            break keyword;
+        }
     };
 
     let Some(TokenTree::Ident(name)) = tokens.next() else {
@@ -57,6 +62,11 @@ pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
     }
 
     generated.extend([
+        punct(':', Spacing::Joint),
+        punct(':', Spacing::Alone),
+        ident("stable_auto", Span::call_site()),
+        punct(':', Spacing::Joint),
+        punct(':', Spacing::Alone),
         ident("Auto", Span::call_site()),
         ident("for", Span::call_site()),
         TokenTree::Ident(name),
