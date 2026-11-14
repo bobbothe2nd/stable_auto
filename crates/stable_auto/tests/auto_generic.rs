@@ -14,6 +14,8 @@ auto_leaf! {
     impl Marker for usize {}
     impl<T: Marker> Marker for &T {}
     impl<T: Marker, const N: usize> Marker for [T; N] {}
+
+    impl<T> Marker for core::mem::Discriminant<T> {}
 }
 
 mod impls {

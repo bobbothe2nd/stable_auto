@@ -1,3 +1,5 @@
+use std::mem::Discriminant;
+
 use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto};
 
 #[auto_trait]
@@ -9,6 +11,7 @@ auto_leaf! {
     impl Marker for usize {}
     impl Marker for PhantomMarked {}
     impl<T> Marker for core::mem::ManuallyDrop<T> {}
+    impl<T> Marker for Discriminant<T> {}
     impl Marker for fn(u8) -> u16 {}
 }
 
