@@ -33,6 +33,13 @@ pub struct AllImpl<T: ?Sized = ()>(PhantomData<T>);
 
 /// A trait to automatically implement other traits if all fields implement them.
 ///
+/// # Note
+///
+/// This is not useful for byte validity, but for crossing between boundaries of processors and devices.
+/// No bitcasting is made safe if this has a `Repr` of `u32`, it is only as safe to share as a `u32`.
+///
+/// # Macro
+///
 /// Prefer to use `#[derive(Auto)]` instead of implementing manually.
 /// Manual implementation is meant as an advanced (and unsafe) escape hatch if you want it to represent something other than it's fields/`Self`.
 ///
