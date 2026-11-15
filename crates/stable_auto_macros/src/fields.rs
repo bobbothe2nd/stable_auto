@@ -222,3 +222,25 @@ fn is_integer_repr(name: &str) -> bool {
             | "isize"
     )
 }
+
+pub fn take_attributes(
+    tokens: &mut std::iter::Peekable<impl Iterator<Item = TokenTree>>,
+) -> Result<TokenStream, TokenStream> {
+    let mut attributes = TokenStream::new();
+
+    while matches!(tokens.peek(), Some(TokenTree::Punct(punct)) if *punct == '#') {
+        let hash = tokens.next().unwrap();
+
+        let Some(TokenTree::Group(group)) = tokens.next() else {
+            return Err(error!(hash.span(), "expected attribute after `#`"));
+        };
+
+        if group.delimiter() != Delimiter::Bracket {
+            return Err(error!(group.span(), "expected bracket-delimited attribute"));
+        }
+
+        attributes.extend([hash, TokenTree::Group(group)]);
+    }
+
+    Ok(attributes)
+}

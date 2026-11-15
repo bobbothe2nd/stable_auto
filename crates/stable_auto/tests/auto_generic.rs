@@ -13,6 +13,10 @@ auto_leaf! {
     impl Marker for u32 {}
     impl Marker for usize {}
     impl<T: Marker> Marker for &T {}
+
+    #[cfg(any())]
+    impl Marker for u8 {}
+
     impl<T: Marker, const N: usize> Marker for [T; N] {}
 
     impl<T> Marker for core::mem::Discriminant<T> {}
@@ -46,6 +50,7 @@ where
     T: Send,
 {
     _a: &'a PhantomMarked<'a>,
+    #[cfg(any())]
     _b: [u16; 3],
     _c: T,
 }
@@ -69,5 +74,9 @@ fn auto_leaf() {
     let _ = PhantomNotMarked;
     let _ = *&PhantomMarked::<'_, u8, 32> {
         _marker: PhantomData,
+    };
+    let _ = ImplAuto3 {
+        _a: &PhantomMarked { _marker: PhantomData },
+        _c: 0,
     };
 }

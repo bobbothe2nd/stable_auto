@@ -1,8 +1,7 @@
 use proc_macro::{Delimiter, Ident, TokenStream, TokenTree};
 
 use crate::{
-    generics::{extract_angle_group, parse_path},
-    ident, is_ident,
+    fields::take_attributes, generics::{extract_angle_group, parse_path}, ident, is_ident,
 };
 
 pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
@@ -10,6 +9,8 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
     let mut output = TokenStream::new();
 
     loop {
+        let attrs = try_stream!(take_attributes(&mut tokens));
+
         let Some(mut token) = tokens.next() else {
             break;
         };
@@ -95,6 +96,8 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
         };
 
         let inner_name = Ident::new(&format!("__auto_{}_inner", trait_name), trait_name.span());
+
+        output.extend(attrs);
 
         unsafe_keyword
             .iter()
