@@ -115,6 +115,14 @@ fn internal_trait(
         )),
     ]);
 
+    generated.extend([
+        ident("pub", Span::call_site()),
+        TokenTree::Group(Group::new(
+            Delimiter::Parenthesis,
+            TokenStream::from(ident("crate", Span::call_site())),
+        )),
+    ]);
+
     unsafe_keyword
         .iter()
         .for_each(|unsafe_keyword| generated.extend([unsafe_keyword.clone()]));
