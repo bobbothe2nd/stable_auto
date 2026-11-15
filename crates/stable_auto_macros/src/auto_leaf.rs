@@ -10,8 +10,22 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
     let mut output = TokenStream::new();
 
     loop {
-        let Some(token) = tokens.next() else {
+        let Some(mut token) = tokens.next() else {
             break;
+        };
+
+        let unsafe_keyword = if is_ident(&token, "unsafe") {
+            let unsafe_token = token.clone();
+
+            let Some(impl_token) = tokens.next() else {
+                return error!(unsafe_token.span(), "expected `impl` after `unsafe`");
+            };
+
+            token = impl_token;
+
+            Some(unsafe_token)
+        } else {
+            None
         };
 
         if !is_ident(&token, "impl") {
@@ -81,6 +95,10 @@ pub fn auto_leaf_inner(input: TokenStream) -> TokenStream {
         };
 
         let inner_name = Ident::new(&format!("__auto_{}_inner", trait_name), trait_name.span());
+
+        unsafe_keyword
+            .iter()
+            .for_each(|unsafe_keyword| output.extend([unsafe_keyword.clone()]));
 
         output.extend([ident("impl", trait_name.span())]);
 
