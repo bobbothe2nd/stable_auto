@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto};
 
 #[auto_trait]
-trait Marker<T = u8>: Clone
+trait Marker: Clone
 where
     Self: Copy,
 {
@@ -39,7 +39,7 @@ where
     _marker: PhantomData<&'a (T, [T; N])>,
 }
 
-#[derive(Debug, Auto, Clone)]
+#[derive(Debug, Auto, Clone, Copy)]
 #[repr(C)]
 struct ImplAuto3<'a, T: Clone = usize>
 where
@@ -50,7 +50,7 @@ where
     _c: T,
 }
 
-#[derive(Auto)]
+#[derive(Auto, Clone, Copy)]
 #[repr(u16)]
 enum EnumReprU16 {
     This,

@@ -1,8 +1,7 @@
 use proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 
 use crate::{
-    generics::{extract_generics, extract_where_clause},
-    ident, punct,
+    generics::{extract_generics, extract_where_clause}, ident, punct, stable_auto_path,
 };
 
 use core::iter::FromIterator;
@@ -54,13 +53,9 @@ pub fn auto_opaque_inner(input: TokenStream) -> TokenStream {
             generated.extend(generics.clone());
         }
 
+        generated.extend(stable_auto_path("Auto"));
+
         generated.extend([
-            punct(':', Spacing::Joint),
-            punct(':', Spacing::Alone),
-            ident("stable_auto", Span::call_site()),
-            punct(':', Spacing::Joint),
-            punct(':', Spacing::Alone),
-            ident("Auto", Span::call_site()),
             ident("for", Span::call_site()),
             TokenTree::Ident(name),
         ]);

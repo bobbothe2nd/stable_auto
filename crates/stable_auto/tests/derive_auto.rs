@@ -1,6 +1,6 @@
 use std::mem::Discriminant;
 
-use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto};
+use stable_auto::{Auto, Union, auto_leaf, auto_opaque, auto_trait};
 
 #[auto_trait]
 trait Marker {}
@@ -13,6 +13,7 @@ auto_leaf! {
     impl<T> Marker for core::mem::ManuallyDrop<T> {}
     impl<T> Marker for Discriminant<T> {}
     impl Marker for fn(u8) -> u16 {}
+    impl Marker for Union {}
 }
 
 #[auto_opaque]

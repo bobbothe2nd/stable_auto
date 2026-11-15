@@ -21,6 +21,9 @@ mod private {
     impl<A, B> SealedTuple for (A, B) {}
 }
 
+/// Marker type to note that a type is a union, not a struct or enum.
+pub enum Union {}
+
 /// Represents a leaf node in auto trait solving
 ///
 /// Use this when you want to use an auto type to be used with multiple other types.
@@ -87,6 +90,9 @@ unsafe impl<T: ?Sized> Auto for AllImpl<T> {
 }
 unsafe impl<T: ?Sized> Auto for Leaf<T> {
     type Fields = Self;
+}
+unsafe impl Auto for Union {
+    type Fields = AllImpl<Self>;
 }
 unsafe impl<T: ?Sized> Auto for &T {
     type Fields = AllImpl<Self>;

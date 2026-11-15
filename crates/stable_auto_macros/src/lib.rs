@@ -1,3 +1,5 @@
+use core::iter::FromIterator;
+
 use proc_macro::{Punct, Spacing, Span, TokenStream, TokenTree};
 
 macro_rules! try_stream {
@@ -46,6 +48,17 @@ fn is_ident(token: &TokenTree, expected: &str) -> bool {
         token,
         TokenTree::Ident(ident) if ident.to_string() == expected
     )
+}
+
+fn stable_auto_path(name: &str) -> TokenStream {
+    TokenStream::from_iter([
+        punct(':', Spacing::Joint),
+        punct(':', Spacing::Alone),
+        ident("stable_auto", Span::call_site()),
+        punct(':', Spacing::Joint),
+        punct(':', Spacing::Alone),
+        ident(name, Span::call_site()),
+    ])
 }
 
 mod fields;
@@ -205,3 +218,32 @@ mod derive_auto;
 pub fn derive_auto(input: TokenStream) -> TokenStream {
     derive_auto::derive_auto_inner(input)
 }
+
+/// ```compile_fail
+/// trait Foo<T> {}
+/// trait Foo<'a> {}
+/// trait Foo<const N: usize> {}
+/// ```
+/// ```no_run
+/// # use stable_auto::*;
+/// # #[auto_trait]
+/// # trait Foo {}
+/// # auto_leaf! { impl Foo for u32 {} impl Foo for u64 {} }
+///
+/// #[derive(Auto)]
+/// struct Bar { a: u32, b: u64 }
+/// # fn is_foo<T: Foo>() {}
+/// is_foo::<Bar>();
+/// ```
+/// ```compile_fail
+/// # use stable_auto::*;
+/// # #[auto_trait]
+/// # trait Foo {}
+/// # auto_leaf! { impl Foo for u32 {} impl Foo for u64 {} }
+///
+// #[derive(Auto)]
+/// union Baz { a: u32, b: u64 }
+/// # fn is_foo<T: Foo>() {}
+/// is_foo::<Baz>();
+/// ```
+fn _test() {}

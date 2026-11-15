@@ -3,9 +3,7 @@ use proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 use std::iter::FromIterator;
 
 use crate::{
-    fields::{extract_enum_types, extract_named_fields, extract_repr, extract_tuple_fields},
-    generics::{extract_generics, extract_where_clause},
-    ident, punct,
+    fields::{extract_enum_types, extract_named_fields, extract_repr, extract_tuple_fields}, generics::{extract_generics, extract_where_clause}, ident, punct, stable_auto_path,
 };
 
 pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
@@ -44,7 +42,13 @@ pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
             _ => unreachable!(),
         },
         "enum" => try_stream!(extract_enum_types(fields.stream(), repr)),
-        "union" => try_stream!(extract_named_fields(fields.stream())),
+        "union" => {
+            let mut types = try_stream!(extract_named_fields(fields.stream()));
+            if types.len() != 1 {
+                types.push(stable_auto_path("Union"));
+            }
+            types
+        },
         _ => unreachable!(),
     };
 
@@ -61,13 +65,9 @@ pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
         generated.extend(generics.clone());
     }
 
+    generated.extend(stable_auto_path("Auto"));
+
     generated.extend([
-        punct(':', Spacing::Joint),
-        punct(':', Spacing::Alone),
-        ident("stable_auto", Span::call_site()),
-        punct(':', Spacing::Joint),
-        punct(':', Spacing::Alone),
-        ident("Auto", Span::call_site()),
         ident("for", Span::call_site()),
         TokenTree::Ident(name),
     ]);
@@ -137,15 +137,8 @@ fn make_fields_type(types: &[TokenStream]) -> TokenStream {
 fn make_leaf(ty: TokenStream) -> TokenStream {
     let mut leaf = TokenStream::new();
 
-    leaf.extend([
-        punct(':', Spacing::Joint),
-        punct(':', Spacing::Alone),
-        ident("stable_auto", Span::call_site()),
-        punct(':', Spacing::Joint),
-        punct(':', Spacing::Alone),
-        ident("Leaf", Span::call_site()),
-        punct('<', Spacing::Alone),
-    ]);
+    leaf.extend(stable_auto_path("Leaf"));
+    leaf.extend([punct('<', Spacing::Alone)]);
 
     leaf.extend(ty);
 
