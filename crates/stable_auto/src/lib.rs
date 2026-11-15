@@ -9,8 +9,6 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-use core::marker::PhantomData;
-
 pub use stable_auto_macros::{auto_leaf, auto_opaque, auto_trait, Auto};
 
 mod private {
@@ -18,31 +16,33 @@ mod private {
     impl<A: ?Sized> SealedTuple for super::AllImpl<A> {}
     impl<A: ?Sized> SealedTuple for super::Leaf<A> {}
     impl SealedTuple for () {}
-    impl<A, B> SealedTuple for (A, B) {}
+    impl<A, B> SealedTuple for super::Combined<A, B> {}
 }
 
 /// Marker type to note that a type is a union, not a struct or enum.
 pub enum Union {}
 
+/// Marker type for enums with a `#[repr(T)]` attribute where `T` is a primitive integer.
+#[repr(transparent)]
+pub struct Repr<T>(T);
+
 /// Marker type to note that a type is a union, not a struct or enum.
-pub struct Repr<T>(PhantomData<T>);
+#[repr(packed(1))]
+pub struct Combined<A, B>(A, B);
 
 /// Represents a leaf node in auto trait solving
 ///
 /// Use this when you want to use an auto type to be used with multiple other types.
-pub struct Leaf<T: ?Sized = ()>(PhantomData<T>);
+#[repr(transparent)]
+pub struct Leaf<T: ?Sized = ()>(T);
 
 /// Represents an opaque wrapper in auto trait solving
 ///
 /// While mostly an implementation detail, this is used when a type is a always an auto leaf node.
-pub struct AllImpl<T: ?Sized = ()>(PhantomData<T>);
+#[repr(transparent)]
+pub struct AllImpl<T: ?Sized = ()>(T);
 
 /// A trait to automatically implement other traits if all fields implement them.
-///
-/// # Note
-///
-/// This is not useful for byte validity, but for crossing between boundaries of processors and devices.
-/// No bitcasting is made safe if this has a `Repr` of `u32`, it is only as safe to share as a `u32`.
 ///
 /// # Macro
 ///
@@ -86,13 +86,16 @@ pub struct AllImpl<T: ?Sized = ()>(PhantomData<T>);
 /// `type Fields = AllImpl<Self>` is always safe.
 pub unsafe trait Auto {
     /// Must represent all the unique types contained within this type; else unsound
-    type Fields: private::SealedTuple;
+    type Fields: private::SealedTuple + ?Sized;
 }
 
 unsafe impl<T: ?Sized> Auto for AllImpl<T> {
     type Fields = Self;
 }
 unsafe impl<T: ?Sized> Auto for Leaf<T> {
+    type Fields = Self;
+}
+unsafe impl<A, B> Auto for Combined<A, B> {
     type Fields = Self;
 }
 unsafe impl Auto for Union {

@@ -211,7 +211,7 @@ mod derive_auto;
 /// }
 ///
 /// unsafe impl Auto for ImplAuto1 {
-///     type Fields = (Leaf<u32>, Leaf<u16>);
+///     type Fields = Combined<Leaf<u32>, Leaf<u16>>;
 /// }
 /// ```
 #[proc_macro_derive(Auto)]

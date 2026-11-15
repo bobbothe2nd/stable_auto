@@ -1,4 +1,4 @@
-use stable_auto::{AllImpl, Auto, Leaf};
+use stable_auto::{AllImpl, Auto, Combined, Leaf};
 
 trait Marker {}
 
@@ -20,7 +20,7 @@ impl<T: __auto_Marker_inner> __auto_Marker_inner for AllImpl<T> {}
 
 impl<T: Marker> __auto_Marker_inner for Leaf<T> {}
 
-impl<A, B> __auto_Marker_inner for (A, B)
+impl<A, B> __auto_Marker_inner for Combined<A, B>
 where
     A: Auto,
     B: Auto,
@@ -38,13 +38,13 @@ unsafe impl Auto for ImplAuto1 {
 struct ImplAuto2;
 
 unsafe impl Auto for ImplAuto2 {
-    type Fields = (Leaf<u32>, Leaf<usize>);
+    type Fields = Combined<Leaf<u32>, Leaf<usize>>;
 }
 
 struct ImplAuto3;
 
 unsafe impl Auto for ImplAuto3 {
-    type Fields = ((Leaf<ImplAuto2>, Leaf<u16>), Leaf<usize>);
+    type Fields = Combined<Combined<Leaf<ImplAuto2>, Leaf<u16>>, Leaf<usize>>;
 }
 
 fn if_auto<T: Marker>() {}

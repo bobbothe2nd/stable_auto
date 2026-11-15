@@ -80,7 +80,7 @@ pub fn auto_trait_inner(input: TokenStream) -> TokenStream {
 
         generated.extend(all_impl(&unsafe_keyword, &inner_name));
         generated.extend(leaf_impl(&unsafe_keyword, &recursive_name, &inner_name));
-        generated.extend(tuple_impl(&unsafe_keyword, &recursive_name, &inner_name));
+        generated.extend(combined_impl(&unsafe_keyword, &recursive_name, &inner_name));
 
         internal_trait(&mut generated, &unsafe_keyword, &recursive_name);
 
@@ -316,7 +316,7 @@ fn leaf_impl(
     output
 }
 
-fn tuple_impl(
+fn combined_impl(
     unsafe_keyword: &Option<TokenTree>,
     trait_name: &str,
     inner_name: &str,
@@ -329,28 +329,24 @@ fn tuple_impl(
 
     output.extend([
         ident("impl", Span::call_site()),
-        TokenTree::Group(Group::new(
-            Delimiter::None,
-            TokenStream::from_iter([
-                punct('<', Spacing::Alone),
-                ident("A", Span::call_site()),
-                punct(',', Spacing::Alone),
-                ident("B", Span::call_site()),
-                punct('>', Spacing::Alone),
-            ]),
-        )),
+        punct('<', Spacing::Alone),
+        ident("A", Span::call_site()),
+        punct(',', Spacing::Alone),
+        ident("B", Span::call_site()),
+        punct('>', Spacing::Alone),
         ident(inner_name, Span::call_site()),
         ident("for", Span::call_site()),
     ]);
 
-    output.extend([TokenTree::Group(Group::new(
-        Delimiter::Parenthesis,
-        TokenStream::from_iter([
-            ident("A", Span::call_site()),
-            punct(',', Spacing::Alone),
-            ident("B", Span::call_site()),
-        ]),
-    ))]);
+    output.extend(stable_auto_path("Combined"));
+
+    output.extend([
+        punct('<', Spacing::Alone),
+        ident("A", Span::call_site()),
+        punct(',', Spacing::Alone),
+        ident("B", Span::call_site()),
+        punct('>', Spacing::Alone),
+    ]);
 
     output.extend([ident("where", Span::call_site())]);
 

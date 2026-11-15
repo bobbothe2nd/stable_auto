@@ -1,6 +1,6 @@
 use proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 
-use std::iter::FromIterator;
+use core::iter::FromIterator;
 
 use crate::{
     fields::{extract_enum_types, extract_named_fields, extract_repr, extract_tuple_fields}, generics::{extract_generics, extract_where_clause}, ident, punct, stable_auto_path,
@@ -119,14 +119,17 @@ fn make_fields_type(types: &[TokenStream]) -> TokenStream {
             for ty in rest {
                 let mut tuple = TokenStream::new();
 
+                tuple.extend(stable_auto_path("Combined"));
+
+                tuple.extend([punct('<', Spacing::Alone)]);
+
                 tuple.extend(result);
-
                 tuple.extend([punct(',', Spacing::Alone)]);
-
                 tuple.extend(make_leaf(ty.clone()));
 
-                result =
-                    TokenStream::from(TokenTree::Group(Group::new(Delimiter::Parenthesis, tuple)));
+                tuple.extend([punct('>', Spacing::Alone)]);
+
+                result = tuple;
             }
 
             result
