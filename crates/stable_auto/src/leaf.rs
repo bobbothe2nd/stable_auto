@@ -84,6 +84,8 @@ impl_auto_leaf!(
 
     <T: ?Sized> PhantomData<T>
 
+    <T> UnsafeCell<T>
+    <T> Cell<T>
     <T: ?Sized> RefCell<T>
     <T: ?Sized> Ref<'_, T>
     <T: ?Sized> RefMut<'_, T>
@@ -339,15 +341,10 @@ unsafe impl<T> Auto for Reverse<T> {
 unsafe impl<T> Auto for Wrapping<T> {
     type Fields = Leaf<T>;
 }
-unsafe impl<T: ?Sized> Auto for UnsafeCell<T> {
-    type Fields = Leaf<T>;
-}
-unsafe impl<T: ?Sized> Auto for Cell<T> {
-    type Fields = Leaf<T>;
-}
 unsafe impl<T> Auto for ManuallyDrop<T> {
     type Fields = Leaf<T>;
 }
+
 #[cfg(saturating_type)]
 unsafe impl<T> Auto for core::num::Saturating<T> {
     type Fields = Leaf<T>;
