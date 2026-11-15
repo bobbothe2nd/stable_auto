@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use stable_auto::{Auto, Repr, auto_leaf, auto_opaque, auto_trait};
+use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto, Repr};
 
 #[auto_trait]
 trait Marker: Clone
@@ -76,7 +76,9 @@ fn auto_leaf() {
         _marker: PhantomData,
     };
     let _ = ImplAuto3 {
-        _a: &PhantomMarked { _marker: PhantomData },
+        _a: &PhantomMarked {
+            _marker: PhantomData,
+        },
         _c: 0,
     };
 }

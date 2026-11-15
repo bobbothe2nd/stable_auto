@@ -3,7 +3,9 @@ use proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 use core::iter::FromIterator;
 
 use crate::{
-    fields::{extract_enum_types, extract_named_fields, extract_repr, extract_tuple_fields}, generics::{extract_generics, extract_where_clause}, ident, punct, stable_auto_path,
+    fields::{extract_enum_types, extract_named_fields, extract_repr, extract_tuple_fields},
+    generics::{extract_generics, extract_where_clause},
+    ident, punct, stable_auto_path,
 };
 
 pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
@@ -48,7 +50,7 @@ pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
                 types.push(stable_auto_path("Union"));
             }
             types
-        },
+        }
         _ => unreachable!(),
     };
 
@@ -67,10 +69,7 @@ pub fn derive_auto_inner(input: TokenStream) -> TokenStream {
 
     generated.extend(stable_auto_path("Auto"));
 
-    generated.extend([
-        ident("for", Span::call_site()),
-        TokenTree::Ident(name),
-    ]);
+    generated.extend([ident("for", Span::call_site()), TokenTree::Ident(name)]);
 
     if let Some((_, _, generics)) = generic_args {
         generated.extend(generics);

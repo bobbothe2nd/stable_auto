@@ -43,27 +43,19 @@ pub fn auto_trait_inner(input: TokenStream) -> TokenStream {
             tokens.peek(),
             Some(TokenTree::Punct(punct)) if *punct == '<'
         ) {
-            return error!(
-                trait_name.span(),
-                "auto traits cannot have generics"
-            );
+            return error!(trait_name.span(), "auto traits cannot have generics");
         }
 
-        let supertraits = extract_supertraits(&mut tokens)
-            .unwrap_or_default();
+        let supertraits = extract_supertraits(&mut tokens).unwrap_or_default();
 
-        let where_clause = extract_where_clause(&mut tokens)
-            .unwrap_or_default();
+        let where_clause = extract_where_clause(&mut tokens).unwrap_or_default();
 
         token.set_span(trait_name.span());
 
         let inner_name = format!("__auto_{trait_name}_inner");
         let recursive_name = format!("__auto_{trait_name}_recursive");
 
-        output.extend([
-            token,
-            TokenTree::Ident(trait_name.clone()),
-        ]);
+        output.extend([token, TokenTree::Ident(trait_name.clone())]);
 
         if !supertraits.is_empty() {
             output.extend([punct(':', Spacing::Alone)]);
@@ -104,7 +96,11 @@ pub fn auto_trait_inner(input: TokenStream) -> TokenStream {
     }
 }
 
-fn internal_trait(generated: &mut TokenStream, unsafe_keyword: &Option<TokenTree>, inner_name: &str) {
+fn internal_trait(
+    generated: &mut TokenStream,
+    unsafe_keyword: &Option<TokenTree>,
+    inner_name: &str,
+) {
     generated.extend([
         punct('#', Spacing::Alone),
         TokenTree::Group(Group::new(
@@ -125,7 +121,7 @@ fn internal_trait(generated: &mut TokenStream, unsafe_keyword: &Option<TokenTree
 
     generated.extend([
         ident("trait", Span::call_site()),
-        ident(&inner_name, Span::call_site()),
+        ident(inner_name, Span::call_site()),
         empty_body(),
     ]);
 }
@@ -227,9 +223,7 @@ fn marker_impl(
     ]);
 
     if !supertraits.is_empty() {
-        output.extend([
-            punct('+', Spacing::Alone),
-        ]);
+        output.extend([punct('+', Spacing::Alone)]);
 
         output.extend(supertraits.clone());
     }
@@ -237,10 +231,7 @@ fn marker_impl(
     output.extend([punct(',', Spacing::Alone)]);
 
     if !where_clause.is_empty() {
-        let predicates = where_clause
-            .clone()
-            .into_iter()
-            .skip(1);
+        let predicates = where_clause.clone().into_iter().skip(1);
 
         output.extend(predicates);
     }
@@ -418,21 +409,15 @@ where
                 depth -= 1;
             }
 
-            TokenTree::Ident(ident)
-                if ident.to_string() == "where" && depth == 0 =>
-            {
+            TokenTree::Ident(ident) if ident.to_string() == "where" && depth == 0 => {
                 break;
             }
 
-            TokenTree::Group(group)
-                if group.delimiter() == Delimiter::Brace && depth == 0 =>
-            {
+            TokenTree::Group(group) if group.delimiter() == Delimiter::Brace && depth == 0 => {
                 break;
             }
 
-            TokenTree::Punct(punct)
-                if *punct == ';' && depth == 0 =>
-            {
+            TokenTree::Punct(punct) if *punct == ';' && depth == 0 => {
                 break;
             }
 

@@ -1,6 +1,6 @@
 use std::mem::Discriminant;
 
-use stable_auto::{Auto, Union, auto_leaf, auto_opaque, auto_trait};
+use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto, Union};
 
 #[auto_trait]
 trait Marker {}
