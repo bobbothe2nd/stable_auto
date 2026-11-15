@@ -45,6 +45,8 @@ impl_auto_leaf!(
     NonZeroU8 NonZeroU16 NonZeroU32 NonZeroU64 NonZeroU128 NonZeroUsize
     NonZeroI8 NonZeroI16 NonZeroI32 NonZeroI64 NonZeroI128 NonZeroIsize
 
+    bool
+
     DecodeUtf16Error EscapeDefault
     str Bytes<'_> Chars<'_> CharIndices<'_> EscapeUnicode<'_> StrDebug<'_> StrDefault<'_> EncodeUtf16<'_> Utf8Error Lines<'_> SplitAsciiWhitespace<'_> SplitWhitespace<'_>
     char CharDebug CharDefault CharUnicode ToLowercase ToUppercase CharTryFromError
