@@ -24,6 +24,9 @@ mod private {
 /// Marker type to note that a type is a union, not a struct or enum.
 pub enum Union {}
 
+/// Marker type to note that a type is a union, not a struct or enum.
+pub struct Repr<T>(PhantomData<T>);
+
 /// Represents a leaf node in auto trait solving
 ///
 /// Use this when you want to use an auto type to be used with multiple other types.
@@ -44,7 +47,8 @@ pub struct AllImpl<T: ?Sized = ()>(PhantomData<T>);
 /// # Macro
 ///
 /// Prefer to use `#[derive(Auto)]` instead of implementing manually.
-/// Manual implementation is meant as an advanced (and unsafe) escape hatch if you want it to represent something other than it's fields/`Self`.
+/// Manual implementation is meant as an advanced (and unsafe) escape hatch if you want it to
+/// represent something other than it's fields or `Self`.
 ///
 /// This means, if `Send2` is a `#[auto_trait]`, these would be equal:
 ///
@@ -92,6 +96,9 @@ unsafe impl<T: ?Sized> Auto for Leaf<T> {
     type Fields = Self;
 }
 unsafe impl Auto for Union {
+    type Fields = AllImpl<Self>;
+}
+unsafe impl<T> Auto for Repr<T> {
     type Fields = AllImpl<Self>;
 }
 unsafe impl<T: ?Sized> Auto for &T {

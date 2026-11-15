@@ -1,6 +1,6 @@
-use proc_macro::{Delimiter, Spacing, Span, TokenStream, TokenTree};
+use proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 
-use crate::{ident, punct};
+use crate::{ident, punct, stable_auto_path};
 
 pub fn extract_tuple_fields(fields: TokenStream) -> Result<Vec<TokenStream>, TokenStream> {
     let mut tokens = fields.into_iter().peekable();
@@ -99,6 +99,16 @@ pub fn extract_enum_types(
     body: TokenStream,
     repr: Option<TokenStream>,
 ) -> Result<Vec<TokenStream>, TokenStream> {
+    if let Some(repr) = repr {
+        let mut repr_ty = stable_auto_path("Repr");
+        repr_ty.extend([
+            punct('<', Spacing::Alone),
+            TokenTree::Group(Group::new(Delimiter::None, repr)),
+            punct('>', Spacing::Alone),
+        ]);
+        return Ok(vec![repr_ty]);
+    }
+
     let mut dscr = TokenStream::new();
     dscr.extend([
         punct(':', Spacing::Joint),
@@ -116,11 +126,6 @@ pub fn extract_enum_types(
     ]);
 
     let mut types = vec![dscr];
-
-    if let Some(repr) = repr {
-        types.push(repr);
-        return Ok(types);
-    }
 
     let mut tokens = body.into_iter().peekable();
 

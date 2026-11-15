@@ -1,4 +1,4 @@
-use crate::{Auto, AllImpl};
+use crate::{AllImpl, Auto, Leaf};
 
 use core::{
     result::{IntoIter as ResIntoIter, Iter as ResIter, IterMut as ResIterMut},
@@ -73,8 +73,6 @@ impl_auto_leaf!(
 );
 
 impl_auto_leaf!(
-    <T> Wrapping<T>
-
     <T, E> Result<T, E>
     <T> ResIntoIter<T>
     <T> ResIter<'_, T>
@@ -86,14 +84,11 @@ impl_auto_leaf!(
 
     <T: ?Sized> PhantomData<T>
 
-    <T: ?Sized> UnsafeCell<T>
-    <T: ?Sized> Cell<T>
     <T: ?Sized> RefCell<T>
     <T: ?Sized> Ref<'_, T>
     <T: ?Sized> RefMut<'_, T>
 
     <T> Discriminant<T>
-    <T> ManuallyDrop<T>
     <T> MaybeUninit<T>
 
     <T> NonNull<T>
@@ -122,8 +117,6 @@ impl_auto_leaf!(
     <T> RChunksMut<'_, T>
     <T> RChunksExact<'_, T>
     <T> RChunksExactMut<'_, T>
-
-    <T> Reverse<T>
 
     <T> Once<T>
     <F> OnceWith<F>
@@ -295,9 +288,6 @@ impl_auto_leaf!(<T> core::cell::OnceCell<T>);
 #[cfg(lazy_cell)]
 impl_auto_leaf!(<T> core::cell::LazyCell<T>);
 
-#[cfg(saturating_type)]
-impl_auto_leaf!(<T> core::num::Saturating<T>);
-
 #[cfg(cstr)]
 impl_auto_leaf!(
     core::ffi::CStr
@@ -341,4 +331,24 @@ impl_auto_leaf!(
 #[cfg(arr_iter)]
 unsafe impl<T, const N: usize> Auto for core::array::IntoIter<T, N> {
     type Fields = AllImpl<Self>;
+}
+
+unsafe impl<T> Auto for Reverse<T> {
+    type Fields = Leaf<T>;
+}
+unsafe impl<T> Auto for Wrapping<T> {
+    type Fields = Leaf<T>;
+}
+unsafe impl<T: ?Sized> Auto for UnsafeCell<T> {
+    type Fields = Leaf<T>;
+}
+unsafe impl<T: ?Sized> Auto for Cell<T> {
+    type Fields = Leaf<T>;
+}
+unsafe impl<T> Auto for ManuallyDrop<T> {
+    type Fields = Leaf<T>;
+}
+#[cfg(saturating_type)]
+unsafe impl<T> Auto for core::num::Saturating<T> {
+    type Fields = Leaf<T>;
 }

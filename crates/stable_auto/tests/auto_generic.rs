@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use stable_auto::{auto_leaf, auto_opaque, auto_trait, Auto};
+use stable_auto::{Auto, Repr, auto_leaf, auto_opaque, auto_trait};
 
 #[auto_trait]
 trait Marker: Clone
@@ -19,7 +19,7 @@ auto_leaf! {
 
     impl<T: Marker, const N: usize> Marker for [T; N] {}
 
-    impl<T> Marker for core::mem::Discriminant<T> {}
+    impl<T: Marker> Marker for Repr<T> {}
 }
 
 mod impls {
